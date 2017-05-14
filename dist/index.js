@@ -176,4 +176,3 @@ sipClientFactory.newClient = function (config) {
 };
 
 module.exports = sipClientFactory;
-//# sourceMappingURL=index.js.map

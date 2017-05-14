@@ -43,4 +43,3 @@ exports.createCivicExt = function (body, clientAccessSecret) {
   var hmac = new sjcl.misc.hmac(clientAccessSecret, sjcl.hash.sha256);
   return sjcl.codec.base64.fromBits(hmac.encrypt(bodyStr));
 };
-//# sourceMappingURL=jwt.js.map

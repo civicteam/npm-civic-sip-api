@@ -1,4 +1,4 @@
-# npm-civic-sip-api
+# civic-sip-api
 
 Node.js wrapper for the Civic hosted SIP API.  For best results, be sure that you're using the latest version.
 
@@ -7,7 +7,7 @@ Node.js wrapper for the Civic hosted SIP API.  For best results, be sure that yo
 civic-sip-api can be installed from npm:
 
 ```
-$ npm install civic-sip-api
+$ npm install civic-sip-api --save
 
 ```
 
