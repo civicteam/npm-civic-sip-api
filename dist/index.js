@@ -1,8 +1,8 @@
 "use strict";
 
-// require("babel-polyfill");
-
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+require("babel-polyfill");
 
 var stringify = require('json-stringify');
 var uritemplate = require('./lib/url-template/url-template');
@@ -58,15 +58,15 @@ sipClientFactory.newClient = function (config) {
 
             case 9:
               response = _context.sent;
-              return _context.abrupt('return', response.data);
+              return _context.abrupt("return", response.data);
 
             case 13:
               _context.prev = 13;
-              _context.t0 = _context['catch'](6);
+              _context.t0 = _context["catch"](6);
               throw new Error('Error exchanging code for data: ' + _context.t0.message);
 
             case 16:
-            case 'end':
+            case "end":
               return _context.stop();
           }
         }
