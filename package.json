@@ -45,7 +45,6 @@
     "json-stringify": "^1.0.0",
     "jsrsasign": "^7.1.5",
     "jsrsasign-util": "^1.0.0",
-    "jwt-js": "^0.5.0",
     "promise": "^7.1.1",
     "sjcl": "^1.0.6",
     "unix-timestamp": "^0.2.0",

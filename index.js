@@ -17,7 +17,7 @@ sipClientFactory.newClient = function (config) {
   const hostedServices = {
     SIPHostedService: {
       base_url: 'https://api.civic.com/sip/',
-      hexpub: '044798c7940a6119583da4606e40f68df3ff449b2d583f0148e9ce6e09349a25ab68494e2bd10b8d5887d4fed438e8b03ba46f2a4b02e3841e7cf1ef3a70aeebf7',
+      hexpub: '049a45998638cfb3c4b211d72030d9ae8329a242db63bfb0076a54e7647370a8ac5708b57af6065805d5a6be72332620932dbb35e8d318fce18e7c980a0eb26aa1',
       tokenType: 'JWT'
     },
   }
@@ -45,6 +45,15 @@ sipClientFactory.newClient = function (config) {
   if(!config.env) {
     config.env = 'dev';
   }
+
+  if (config.api) {
+    hostedServices.SIPHostedService.base_url = config.api;
+
+    if (!config.api.endsWith('/')) {
+      hostedServices.SIPHostedService.base_url += '/';
+    }
+  }
+
   //If defaultContentType is not defined then default to application/json
   if(config.defaultContentType === undefined) {
       config.defaultContentType = 'application/json';
@@ -55,7 +64,7 @@ sipClientFactory.newClient = function (config) {
   }
 
   // extract endpoint and path from url
-  const invokeUrl = 'https://api.civic.com/sip/' + config.env;
+  const invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
   const endpoint = /(^https?:\/\/[^\/]+)/g.exec(invokeUrl)[1];
   const pathComponent = invokeUrl.substring(endpoint.length);
 
@@ -102,6 +111,11 @@ sipClientFactory.newClient = function (config) {
       path: targetPath
     }, config.appSecret);
 
+    console.log('token: ', jwtToken);
+      const parts = jwtToken.split('.');
+    console.log('parts.length: ', parts.length);
+    const jwtDecoded = jwtjs.decode(jwtToken);
+    console.log('jwtDecoded: ', jwtDecoded);
     const extension = jwtjs.createCivicExt(requestBody, config.appSecret);
     return 'Civic' + ' ' + jwtToken + '.' + extension;
   }
