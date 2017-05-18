@@ -25,26 +25,26 @@ civicClient.exchangeCode(jwtToken)
 
         /*  example for response to a CIVIC_BASIC scope request:
             userData = {
-                "data": {
-                    "0": {
+                "data": [
+                    {
                         "label": "contact.verificationLevel.CIVIC_0",
                         "value": "contact.verificationLevel.CIVIC_0, true",
                         "isValid": true,
                         "isOwner": true
                     },
-                    "1": {
+                    {
                         "label": "contact.personal.email",
                         "value": "user.test@gmail.com",
                         "isValid": true,
                         "isOwner": true
                     },
-                    "2": {
+                    {
                         "label": "contact.personal.phoneNumber",
                         "value": "+1 415-618-7380",
                         "isValid": true,
                         "isOwner": true
                     }
-                },
+                ],
                 "encrypted": false,
                 "userId": "36a59d10-6c53-17f6-9185-gthyte22647a"
             }
