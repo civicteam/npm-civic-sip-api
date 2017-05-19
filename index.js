@@ -26,7 +26,8 @@ sipClientFactory.newClient = function (config) {
   if(config === undefined) {
       config = {
           appId: '',
-          appSecret: '',  // in hex format
+          appSecret: '',  // hex format
+          prvKey: '',     // hex format
           env: '',
           defaultContentType: 'application/json',
           defaultAcceptType: 'application/json'
@@ -39,6 +40,10 @@ sipClientFactory.newClient = function (config) {
 
   if(!config.appSecret) {
     throw new Error('Please supply your application secret.');
+  }
+
+  if(!config.prvKey) {
+    throw new Error('Please supply your application private key.');
   }
 
   // TODO: change default to prod once partner accounts and prod setup is in place.
@@ -109,13 +114,10 @@ sipClientFactory.newClient = function (config) {
     const jwtToken = jwtjs.createToken(config.appId, hostedServices['SIPHostedService'].base_url, config.appId, JWT_EXPIRATION, {
       method: targetMethod,
       path: targetPath
-    }, config.appSecret);
+    }, config.prvKey);
 
-    console.log('token: ', jwtToken);
-      const parts = jwtToken.split('.');
-    console.log('parts.length: ', parts.length);
-    const jwtDecoded = jwtjs.decode(jwtToken);
-    console.log('jwtDecoded: ', jwtDecoded);
+    // const parts = jwtToken.split('.');
+    // const jwtDecoded = jwtjs.decode(jwtToken);
     const extension = jwtjs.createCivicExt(requestBody, config.appSecret);
     return 'Civic' + ' ' + jwtToken + '.' + extension;
   }
@@ -162,7 +164,6 @@ sipClientFactory.newClient = function (config) {
     } catch(error) {
       throw new Error('Error exchanging code for data: ' + error.message);
     }
-
 
   };
 
