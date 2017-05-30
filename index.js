@@ -5,7 +5,7 @@ require("babel-polyfill");
 const stringify = require('json-stringify');
 const uritemplate = require('./lib/url-template/url-template');
 const apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
-const crypto = require('crypto');
+const CryptoJS = require('crypto-js');
 const jwtjs = require('./lib/jwt');
 
 const sipClientFactory = {};
@@ -28,7 +28,7 @@ sipClientFactory.newClient = function (config) {
           appId: '',
           appSecret: '',  // hex format
           prvKey: '',     // hex format
-          env: '',
+          env: 'prod',
           defaultContentType: 'application/json',
           defaultAcceptType: 'application/json'
       };
@@ -46,9 +46,8 @@ sipClientFactory.newClient = function (config) {
     throw new Error('Please supply your application private key.');
   }
 
-  // TODO: change default to prod once partner accounts and prod setup is in place.
   if(!config.env) {
-    config.env = 'dev';
+    config.env = 'prod';
   }
 
   if (config.api) {
@@ -116,12 +115,45 @@ sipClientFactory.newClient = function (config) {
       path: targetPath
     }, config.prvKey);
 
-    // const parts = jwtToken.split('.');
-    // const jwtDecoded = jwtjs.decode(jwtToken);
     const extension = jwtjs.createCivicExt(requestBody, config.appSecret);
     return 'Civic' + ' ' + jwtToken + '.' + extension;
   }
 
+  /**
+   * The user data received from the civic sip server is wrapped in a
+   * JWT token and encrypted using aes with the partner secret. This
+   * function verifies the token is valid (signed by Civic sip server etc.)
+   * and decrypts the user data if required.
+   *
+   * @param payload contains data field with JWT token signed by sip-hosted-services
+   */
+  function verifyAndDecrypt(payload) {
+    const token = payload.data;
+    const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60, });
+
+    if (!isValid) {
+      throw new Error('JWT Token containing encrypted data could not be verified');
+    }
+
+    // decrypt the data
+    const decodedToken = jwtjs.decode(token);
+    let userData,
+        clearText = decodedToken.payloadObj.data;
+
+    if (payload.encrypted) {
+      const clearData = CryptoJS.AES.decrypt(decodedToken.payloadObj.data, config.appSecret);
+      clearText = clearData.toString(CryptoJS.enc.Utf8);
+    }
+
+    try {
+      userData = JSON.parse(clearText);
+    } catch (e) {
+      /* Ignore */
+      console.log('Error parsing decrypted string to user data: ' + e.message);
+    }
+
+    return userData;
+  }
   /**
    * Exchange authorization code in the form of a JWT Token for the user data
    * requested in the scope request.
@@ -155,14 +187,25 @@ sipClientFactory.newClient = function (config) {
         body: body
     };
 
+    let data, errorObj;
+
     try {
 
       const response = await apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams, config.apiKey);
-      // console.log('response.data: ', JSON.stringify(response.data, null, 2));
-      return response.data;
+      console.log('Civic response: ', JSON.stringify(response, null, 2));
+      if (response.status != 200) {
+        errorObj = new Error('Error exchanging code for data: ' , response.status);
+      } else {
+        return verifyAndDecrypt(response.data);
+      }
 
     } catch(error) {
+      console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
       throw new Error('Error exchanging code for data: ' + error.message);
+    }
+
+    if (errorObj) {
+      throw errorObj;
     }
 
   };

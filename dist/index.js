@@ -7,7 +7,7 @@ require("babel-polyfill");
 var stringify = require('json-stringify');
 var uritemplate = require('./lib/url-template/url-template');
 var apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
-var crypto = require('crypto');
+var CryptoJS = require('crypto-js');
 var jwtjs = require('./lib/jwt');
 
 var sipClientFactory = {};
@@ -15,7 +15,6 @@ var sipClientFactory = {};
 var JWT_EXPIRATION = '3m';
 
 sipClientFactory.newClient = function (config) {
-
   /**
    * Exchange authorization code in the form of a JWT Token for the user data
    * requested in the scope request.
@@ -26,7 +25,7 @@ sipClientFactory.newClient = function (config) {
 
   var exchangeCode = function () {
     var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(jwtToken) {
-      var body, authHeader, contentLength, additionalParams, params, scopeRequestAuthCodePostRequest, response;
+      var body, authHeader, contentLength, additionalParams, params, scopeRequestAuthCodePostRequest, data, errorObj, response;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
@@ -52,25 +51,53 @@ sipClientFactory.newClient = function (config) {
                 queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
                 body: body
               };
-              _context.prev = 6;
-              _context.next = 9;
+              data = void 0, errorObj = void 0;
+              _context.prev = 7;
+              _context.next = 10;
               return apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams, config.apiKey);
 
-            case 9:
+            case 10:
               response = _context.sent;
-              return _context.abrupt("return", response.data);
 
-            case 13:
-              _context.prev = 13;
-              _context.t0 = _context["catch"](6);
-              throw new Error('Error exchanging code for data: ' + _context.t0.message);
+              console.log('Civic response: ', JSON.stringify(response, null, 2));
+
+              if (!(response.status != 200)) {
+                _context.next = 16;
+                break;
+              }
+
+              errorObj = new Error('Error exchanging code for data: ', response.status);
+              _context.next = 17;
+              break;
 
             case 16:
+              return _context.abrupt("return", verifyAndDecrypt(response.data));
+
+            case 17:
+              _context.next = 23;
+              break;
+
+            case 19:
+              _context.prev = 19;
+              _context.t0 = _context["catch"](7);
+
+              console.log('Civic ERROR response: ', JSON.stringify(_context.t0, null, 2));
+              throw new Error('Error exchanging code for data: ' + _context.t0.message);
+
+            case 23:
+              if (!errorObj) {
+                _context.next = 25;
+                break;
+              }
+
+              throw errorObj;
+
+            case 25:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, this, [[6, 13]]);
+      }, _callee, this, [[7, 19]]);
     }));
 
     return function exchangeCode(_x) {
@@ -92,7 +119,7 @@ sipClientFactory.newClient = function (config) {
       appId: '',
       appSecret: '', // hex format
       prvKey: '', // hex format
-      env: '',
+      env: 'prod',
       defaultContentType: 'application/json',
       defaultAcceptType: 'application/json'
     };
@@ -110,9 +137,8 @@ sipClientFactory.newClient = function (config) {
     throw new Error('Please supply your application private key.');
   }
 
-  // TODO: change default to prod once partner accounts and prod setup is in place.
   if (!config.env) {
-    config.env = 'dev';
+    config.env = 'prod';
   }
 
   if (config.api) {
@@ -180,10 +206,43 @@ sipClientFactory.newClient = function (config) {
       path: targetPath
     }, config.prvKey);
 
-    // const parts = jwtToken.split('.');
-    // const jwtDecoded = jwtjs.decode(jwtToken);
     var extension = jwtjs.createCivicExt(requestBody, config.appSecret);
     return 'Civic' + ' ' + jwtToken + '.' + extension;
+  }
+
+  /**
+   * The user data received from the civic sip server is wrapped in a
+   * JWT token and encrypted using the partner secret with aes.
+   *
+   * @param payload contains data field with JWT token signed by sip-hosted-services
+   */
+  function verifyAndDecrypt(payload) {
+    var token = payload.data;
+    var isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
+
+    if (!isValid) {
+      console.log('Civic ERROR response: JWT Token containing encrypted data could not be verified');
+      throw new Error('JWT Token containing encrypted data could not be verified');
+    }
+
+    // decrypt the data
+    var decodedToken = jwtjs.decode(token);
+    var userData = void 0,
+        clearText = decodedToken.payloadObj.data;
+
+    if (payload.encrypted) {
+      var clearData = CryptoJS.AES.decrypt(decodedToken.payloadObj.data, config.appSecret);
+      clearText = clearData.toString(CryptoJS.enc.Utf8);
+    }
+
+    try {
+      userData = JSON.parse(clearText);
+    } catch (e) {
+      /* Ignore */
+      console.log('Error parsing decrypted string to user data: ' + e.message);
+    }
+
+    return userData;
   };
 
   apigClient.exchangeCode = exchangeCode;

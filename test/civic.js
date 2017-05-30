@@ -1,32 +1,40 @@
 'use strict';
 
-require("babel-polyfill");
-require("babel-core/register");
+require('babel-polyfill');
+require('babel-core/register');
+const needle = require('needle');
 const jwtjs = require('jwt-js');
-
+const unixTimestamp = require('unix-timestamp');
 const rs = require('jsrsasign');
-var rsu = require("jsrsasign-util"); // for file I/O
+const rsu = require("jsrsasign-util"); // for file I/O
+const CryptoJS = require('crypto-js');
+const stringify = require('json-stable-stringify');
 
 const civicSip = require('../index');
+const jwt = require('../lib/jwt');
+
 const assert = require('chai').assert;
 
 // secp256r1 ECC curve for key pair:
 const HEX_PRVKEY_NIST = 'a3ed0dd27cbfa62e13e340fb3dbb86895b99d5fd330a80e799baffcb1d29c17a';
 const HEX_PUBKEY_NIST = '04a77e5c9c01df457ba941e28e187d3f53962f9038b5e481036cd9e7e9d1b1047c223c5b3db30fb12ff9f26eb229bb422eecf1a5df676d91099e081e4ec88ec339';
-const  SECRET = '879946CE682C0B584B3ACDBC7C169473';
+const SECRET = '879946CE682C0B584B3ACDBC7C169473';
 const ALGO = 'ES256',
       curve = "secp256r1";
 
-function generateToken(prvKeyObj) {
+function generateToken(prvKeyObj, expStr) {
+  const now = unixTimestamp.now();
+  const until = unixTimestamp.add(now, expStr || '3m');
+
   const payload = {
     jti: '45a59d10-6e93-47f6-9185-adacfe28907a',
     iat: 1494204971.361,
-    exp: rs.jws.IntDate.get('now + 1day'),   // 3 minute lifespan
+    exp: until,
     iss: 'civic-sip-hosted-service',
-    aud: '/dev/scopeRequest/authCode',  // valid endpoints for this token
+    aud: 'https://api.civic.com/sip/',  // valid endpoints for this token
     sub: 'civic-sip-hosted-service',
     data: {
-      codeToken: '81f2564c-e7c0-4869-be49-a88f5738534f',
+      codeToken: '7cf8cfde-d7a2-4daa-8d44-c8e27320f688',
     }
   }
 
@@ -45,7 +53,7 @@ describe('jsRsaSign JWTToken module', function() {
   const authCode = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVYp13UBCyATFsxt52OUl8cvkEvQgU7dQ_UzISnXV30WdFTooHpW9as8uhMeBG3IXTJzktxQ';
   const authCode_ES256 = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NWE1OWQxMC02ZTkzLTQ3ZjYtOTE4NS1hZGFjZmUyODkwN2EiLCJpYXQiOjE0OTQyMDQ5NzEuMzYxLCJleHAiOjE0OTUyMTEwMTgsImlzcyI6ImNpdmljLXNpcC1ob3N0ZWQtc2VydmljZSIsImF1ZCI6Ii9kZXYvc2NvcGVSZXF1ZXN0L2F1dGhDb2RlIiwic3ViIjoiY2l2aWMtc2lwLWhvc3RlZC1zZXJ2aWNlIiwiZGF0YSI6eyJjb2RlVG9rZW4iOiI4MWYyNTY0Yy1lN2MwLTQ4NjktYmU0OS1hODhmNTczODUzNGYifX0.U-_xgL9348VhcfGvRqdmIdkBlrYNCs9FUsDmb977mnXuIuVzQkQin8uz1f_BM8JW_1SuxeGBSKIXf4BhmpHo9g';
 
-  it.only('should generate ES256 NIST keypair in PEM format', function (done) {
+  it('should generate ES256 NIST keypair in PEM format', function (done) {
     const doneFn = done;
 
     // generate keypair and save to file in PEM format.
@@ -67,6 +75,46 @@ describe('jsRsaSign JWTToken module', function() {
 
     // var ec = new rs.KJUR.crypto.ECDSA({curve: curve});
     // var keypairHex = ec.generateKeyPairHex();
+
+    doneFn();
+  });
+
+  it('should generate a long-lived token', function (done) {
+    const doneFn = done;
+
+    var prvKey = new rs.KJUR.crypto.ECDSA({curve: curve});
+    prvKey.setPrivateKeyHex(HEX_PRVKEY_NIST);
+    prvKey.isPrivate = true;
+    prvKey.isPublic = false;
+
+    const result = generateToken(prvKey, '30d');
+
+    console.log('JWT long lived token: ', result);
+    doneFn();
+  });
+
+  it('should compare javascript and php hmac sha256 results', function (done) {
+    const doneFn = done;
+    const phpHash = 'MsZHYCq0xMdUPpxQriXlZ8M1ThUysRZJzjCObiVo0gU=';
+    const msg = 'Message';
+    const key = 'secret';
+    const bkey = sjcl.codec.utf8String.toBits(key);
+    const strMsg = stringify(msg);
+    const hmac = new sjcl.misc.hmac(bkey, sjcl.hash.sha256);
+    const jsHash =  sjcl.codec.base64.fromBits(hmac.encrypt(strMsg));
+
+    const nsHmac = new sjcl.misc.hmac(key, sjcl.hash.sha256);
+    const nsJsHash =  sjcl.codec.base64.fromBits(nsHmac.encrypt(msg));
+
+    // crypto-js version
+    const hmacBuffer = CryptoJS.HmacSHA256(msg, key);
+    let hmacInBase64 = CryptoJS.enc.Base64.stringify(hmacBuffer);
+
+    // const jsHash = jwt.createCivicExt(msg, key);
+    console.log('PHP   Hash: ', phpHash);
+    console.log('JS    Hash: ', jsHash);
+    console.log('JSns  Hash: ', nsJsHash);
+    assert(jsHash === phpHash, 'PHP and Javascript hashes are not equal.');
 
     doneFn();
   });
@@ -99,6 +147,8 @@ describe('jsRsaSign JWTToken module', function() {
     doneFn();
   });
 
+
+
   /**
    * 1. load public key HEX_PUBKEY_NIST into ECDSA object from hex string.
    * 2. retrieve PEM format of key.
@@ -122,9 +172,78 @@ describe('jsRsaSign JWTToken module', function() {
     doneFn();
   });
 
+  it('should verify a partner authorization header for auth code exchange api call.', function (done) {
+    const partner_pub_key = '040e5407b993d672da6727577fc7005119cbecd340366e1f452df67ac536822894fb00414ff77c75e61b9519e61397d1f4c692da449c72cee3a69b33d04858902f';
+    const authHeader = 'Civic eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Il9vLTN3eHoifQ.eyJhdWQiOiJodHRwczpcL1wvYXBpLmNpdmljLmNvbVwvc2lwXC8iLCJpc3MiOiJIazJ4NU9GZVoiLCJpYXQiOjE0OTU0ODM4ODUsImV4cCI6MTQ5NTQ4Mzk1NSwiZGF0YSI6eyJtZXRob2QiOiJQT1NUIiwicGF0aCI6InNjb3BlUmVxdWVzdFwvYXV0aENvZGUifSwic3ViIjoiSGsyeDVPRmVaIn0.PfCHiOruQZHoZnJLqCPBNA5U6UGDWi7OLCzzm1tIwmlE0mvds_frnzqePmZ32I-DxjraylOqZWFiG6YuxQY6UQ./lOwdOrqRrlnWMtl123IH4sN4mzJOE+/TvzS3RZH5jM=';
+    const body = "{\"authToken\":\"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NWE1OWQxMC02ZTkzLTQ3ZjYtOTE4NS1hZGFjZmUyODkwN2EiLCJpYXQiOjE0OTQyMDQ5NzEuMzYxLCJleHAiOjE0OTgwNzQ0NzgsImlzcyI6ImNpdmljLXNpcC1ob3N0ZWQtc2VydmljZSIsImF1ZCI6Imh0dHBzOi8vYXBpLmNpdmljLmNvbS9zaXAvIiwic3ViIjoiY2l2aWMtc2lwLWhvc3RlZC1zZXJ2aWNlIiwiZGF0YSI6eyJjb2RlVG9rZW4iOiI3Y2Y4Y2ZkZS1kN2EyLTRkYWEtOGQ0NC1jOGUyNzMyMGY2ODgifX0.QgvcBTtWkybRlbh85V5opwy7cgORRhjHKXXsrlT3BAnU-u-JzWDbMC_z9CHwQeZc1AcmVYTyUKbbO8LPh-2zEA\"}";
+    const secret = 'E72E1D26CA40995F622E1BF4F6552B22';
+
+    const bodyObj = JSON.parse(body);
+
+    // start processing the header
+    const tokenType = authHeader.split(" ")[0];
+    assert(tokenType === 'Civic', 'Incorrect tokenType.');
+    const token = authHeader.split(" ")[1];
+    const parts = token.split('.');
+    assert(parts.length === 4, 'Authorization header should consist of a JWT token plus the Civic Extension.');
+    const jwtToken = token.substring(0, token.lastIndexOf('.'));
+    const decodedToken = rs.jws.JWS.parse(jwtToken);
+
+    const tokenDetails = decodedToken.payloadObj;
+    const appId = tokenDetails.iss;
+    assert(appId === tokenDetails.sub, 'iss and sub must be set to the appId for self-signed tokens.');
+
+    const principalId = 'client|'+ tokenDetails.sub;
+    const expire = tokenDetails.exp;
+    const allowedMethod = tokenDetails.data.method;
+    const allowedPath = tokenDetails.data.path;
+    assert(allowedMethod === 'POST', 'POST must be specified.');
+    assert(allowedPath === 'scopeRequest/authCode', 'incorrect path.')
+
+    // partner public key
+    const pubKey = new rs.KJUR.crypto.ECDSA({curve: curve});
+    pubKey.setPublicKeyHex(partner_pub_key);
+    pubKey.isPrivate = false;
+    pubKey.isPublic = true;
+
+    // verify JWT
+    const acceptable = {
+      alg: [ALGO],
+      // iss: ['http://foo.com'],
+      // sub: ['mailto:john@foo.com', 'mailto:alice@foo.com'],
+      // verifyAt: KJUR.jws.IntDate.get('20150520235959Z'),
+      aud: ['https://api.civic.com/sip/'], // aud: 'http://foo.com' is fine too.
+      gracePeriod: 20 * 60 * 60 // accept 10 hour slow or fast
+    }
+
+    let isValid = rs.jws.JWS.verifyJWT(jwtToken, pubKey, acceptable);
+    assert(isValid, 'Invalid JWT token as part of the Authorization Header.');
+
+    // validate the Civic Ext portion
+    const civicExt = token.substring(token.lastIndexOf('.') + 1);
+    const recalcExt = jwt.createCivicExt(bodyObj, secret);
+
+    const bodyStr = stringify(bodyObj);
+    const hmac = new sjcl.misc.hmac(secret, sjcl.hash.sha256);
+    const tokenOnly = sjcl.codec.base64.fromBits(hmac.encrypt(stringify(bodyObj.authToken)));
+
+
+    // assert(wholeBody === recalcExt, '')
+    console.log('tokenOnly: ', tokenOnly);
+    console.log('civic Ext from AuthHeader: ', civicExt);
+    console.log('Recalced Civic Ext: ', recalcExt);
+
+    // assert(civicExt === recalcExt, 'Civic Extension mismatch.');
+
+    // verify the JWT Token (authToken) in the body
+    isValid = jwt.verify(bodyObj.authToken, HEX_PUBKEY_NIST, { gracePeriod: 0, });
+    assert(isValid, 'Civic authToken failed verification');
+
+    done();
+  });
+
   it('should generate JWT token using ES256 Algorithm', function (done) {
-    const doneFn = done,
-    ALGO = 'ES256';
+    const doneFn = done;
 
     const payload = {
       jti: '45a59d10-6e93-47f6-9185-adacfe28907a',
@@ -171,17 +290,51 @@ describe('jsRsaSign JWTToken module', function() {
 })
 
 
-describe('exchangeCode', function() {
+describe('Civic SIP Server', function() {
   this.timeout(10000);
 
-  const authCode = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVYp13UBCyATFsxt52OUl8cvkEvQgU7dQ_UzISnXV30WdFTooHpW9as8uhMeBG3IXTJzktxQ';
+  const API = 'https://ah0y3xrqs1.execute-api.us-east-1.amazonaws.com/',
+        STAGE = 'ci',
+        authCode = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVYp13UBCyATFsxt52OUl8cvkEvQgU7dQ_UzISnXV30WdFTooHpW9as8uhMeBG3IXTJzktxQ';
+
   const civicClient = civicSip.newClient({
-    appId: 'aaa123', // insert appId
-    appSecret: SECRET,
+    appId: 'aaa123',
     prvKey: HEX_PRVKEY_NIST,
-    env: 'dev',
+    appSecret: SECRET,
+    api: API,
+    env: STAGE,
   });
 
+  it('should call Civic with an invalid token and receive an error code.', function(done) {
+    const doneFn = done;
+
+    const BAD_AUTH_HEADER = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVY';
+    const body = { authToken: authCode };
+    const contentLength = Buffer.byteLength(JSON.stringify(body));
+    const options = {
+      headers: {
+        'Content-Length': contentLength,
+        'Accept': '*/*',
+        'Authorization': BAD_AUTH_HEADER,
+      }
+    }
+
+    let url = API + STAGE + '/scopeRequest/authCode'
+
+          url = 'https://api.civic.com/sip/prod/scopeRequest/authCode';
+
+    needle.post(url, body, options, function(err, resp) {
+      if (err) {
+        console.log('Error: ', JSON.stringify(err, null, 2));
+        doneFn(err);
+      } else {
+        console.log('statusCode: ', resp.statusCode);
+        console.log('statusMessage: ', resp.statusMessage);
+        doneFn();
+      }
+    });
+
+  });
 
   it('should exchange authCode for user data.', function(done) {
     const doneFn = done;
@@ -210,4 +363,38 @@ describe('exchangeCode', function() {
 
   });
   */
+})
+
+describe('Encryption and decryption', function() {
+  const userData = '[{ "label": "contact.personal.email", "value": "test@tester.com", "isValid": true, "isOwner": true }, { "label": "contact.personal.phoneNumber", "value": "+1 5553590384", "isValid": true, "isOwner": true }]';
+
+  it('should encrypt and decrypt a response using partner secret and AES.', function(done) {
+    const doneFn = done,
+          txt = '[{"label": "contact.personal.email","value": "test@tester.com","isValid": true,"isOwner": true}]';
+
+    const ct = CryptoJS.AES.encrypt(txt, 'secret key 123');
+    const dbytes = CryptoJS.AES.decrypt(ct.toString(), 'secret key 123');
+    const dt = dbytes.toString(CryptoJS.enc.Utf8);
+    assert(dt === txt, 'The decryption has not succeeded.');
+    doneFn();
+  });
+
+  it.only('should create and verify JWT token with encrypted data.', function(done) {
+
+    const doneFn = done;
+    const cipherObj = CryptoJS.AES.encrypt(userData, SECRET);
+
+    const token = jwt.createToken('civic-sip-hosted-service', 'https://api.civic.com/sip/', 'aaa123',
+      '20m', cipherObj.toString(), HEX_PRVKEY_NIST);
+
+    const isValid = jwt.verify(token, HEX_PUBKEY_NIST, { gracePeriod: 30, });
+    assert(isValid, 'JWT Token containing encrypted data could not be verified.');
+
+    // decrypt the data
+    const decodedToken = jwt.decode(token);
+    const clearData = CryptoJS.AES.decrypt(decodedToken.payloadObj.data, SECRET);
+    const decryptedText = clearData.toString(CryptoJS.enc.Utf8);
+    assert(decryptedText === userData, 'Decrypted Token data does match original input.');
+    doneFn();
+  });
 })

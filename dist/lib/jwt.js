@@ -10,8 +10,9 @@
 var rs = require('jsrsasign');
 var uuidV4 = require('uuid/v4');
 var timestamp = require('unix-timestamp');
-var sjcl = require('sjcl');
+var CryptoJS = require('crypto-js');
 var stringify = require('json-stable-stringify');
+var merge = require('lodash.merge');
 
 var ALGO = 'ES256';
 var CURVE = "secp256r1";
@@ -46,14 +47,15 @@ exports.createToken = function (issuer, audience, subject, expiresIn, payload, p
   return token;
 };
 
-exports.verify = function (token, pubhex) {
+exports.verify = function (token, pubhex, acceptable) {
   // verify JWT
-  var pubKey = new rs.KJUR.crypto.ECDSA({ curve: curve });
+  var options = merge(acceptable || {}, { alg: [ALGO] });
+  var pubKey = new rs.KJUR.crypto.ECDSA({ curve: CURVE });
   pubKey.setPublicKeyHex(pubhex);
   pubKey.isPrivate = false;
   pubKey.isPublic = true;
 
-  return rs.jws.JWS.verifyJWT(token, pubKey, { alg: [ALGO] });
+  return rs.jws.JWS.verifyJWT(token, pubKey, options);
 };
 
 exports.decode = function (token) {
@@ -63,6 +65,6 @@ exports.decode = function (token) {
 exports.createCivicExt = function (body, clientAccessSecret) {
 
   var bodyStr = stringify(body);
-  var hmac = new sjcl.misc.hmac(clientAccessSecret, sjcl.hash.sha256);
-  return sjcl.codec.base64.fromBits(hmac.encrypt(bodyStr));
+  var hmacBuffer = CryptoJS.HmacSHA256(bodyStr, clientAccessSecret);
+  return CryptoJS.enc.Base64.stringify(hmacBuffer);
 };
