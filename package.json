@@ -39,7 +39,8 @@
     "log": "^1.4.0",
     "mocha": "^2.5.3",
     "needle": "^1.6.0",
-    "node-uuid": "^1.4.7"
+    "node-uuid": "^1.4.7",
+    "sjcl": "^1.0.6",
   },
   "dependencies": {
     "babel-polyfill": "^6.22.0",
@@ -48,7 +49,6 @@
     "jsrsasign": "^7.1.5",
     "jsrsasign-util": "^1.0.0",
     "promise": "^7.1.1",
-    "sjcl": "^1.0.6",
     "unix-timestamp": "^0.2.0",
     "uuid": "^3.0.1",
     "xmlhttprequest": "^1.8.0",
