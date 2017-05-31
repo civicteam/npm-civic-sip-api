@@ -5,7 +5,7 @@ require("babel-polyfill");
 const stringify = require('json-stringify');
 const uritemplate = require('./lib/url-template/url-template');
 const apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
-const CryptoJS = require('crypto-js');
+const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
 
 const sipClientFactory = {};
@@ -141,8 +141,7 @@ sipClientFactory.newClient = function (config) {
         clearText = decodedToken.payloadObj.data;
 
     if (payload.encrypted) {
-      const clearData = CryptoJS.AES.decrypt(decodedToken.payloadObj.data, config.appSecret);
-      clearText = clearData.toString(CryptoJS.enc.Utf8);
+      clearText = basicCrypto.decrypt(decodedToken.payloadObj.data, config.appSecret);
     }
 
     try {

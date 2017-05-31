@@ -7,7 +7,7 @@ require("babel-polyfill");
 var stringify = require('json-stringify');
 var uritemplate = require('./lib/url-template/url-template');
 var apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
-var CryptoJS = require('crypto-js');
+var basicCrypto = require('./lib/basicCrypto');
 var jwtjs = require('./lib/jwt');
 
 var sipClientFactory = {};
@@ -212,7 +212,9 @@ sipClientFactory.newClient = function (config) {
 
   /**
    * The user data received from the civic sip server is wrapped in a
-   * JWT token and encrypted using the partner secret with aes.
+   * JWT token and encrypted using aes with the partner secret. This
+   * function verifies the token is valid (signed by Civic sip server etc.)
+   * and decrypts the user data if required.
    *
    * @param payload contains data field with JWT token signed by sip-hosted-services
    */
@@ -221,7 +223,6 @@ sipClientFactory.newClient = function (config) {
     var isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
 
     if (!isValid) {
-      console.log('Civic ERROR response: JWT Token containing encrypted data could not be verified');
       throw new Error('JWT Token containing encrypted data could not be verified');
     }
 
@@ -231,8 +232,7 @@ sipClientFactory.newClient = function (config) {
         clearText = decodedToken.payloadObj.data;
 
     if (payload.encrypted) {
-      var clearData = CryptoJS.AES.decrypt(decodedToken.payloadObj.data, config.appSecret);
-      clearText = clearData.toString(CryptoJS.enc.Utf8);
+      clearText = basicCrypto.decrypt(decodedToken.payloadObj.data, config.appSecret);
     }
 
     try {
