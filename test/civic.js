@@ -2,8 +2,8 @@
 
 require('babel-polyfill');
 require('babel-core/register');
+
 const needle = require('needle');
-const jwtjs = require('jwt-js');
 const unixTimestamp = require('unix-timestamp');
 const rs = require('jsrsasign');
 const rsu = require("jsrsasign-util"); // for file I/O
@@ -12,6 +12,7 @@ const stringify = require('json-stable-stringify');
 
 const civicSip = require('../index');
 const jwt = require('../lib/jwt');
+const basicCrypto = require('../lib/basicCrypto');
 
 const assert = require('chai').assert;
 
@@ -49,14 +50,15 @@ function generateToken(prvKeyObj, expStr) {
 describe('jsRsaSign JWTToken module', function() {
   this.timeout(10000);
   let tokenES256;
-
+  SkK_cm0ZW
   const authCode = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVYp13UBCyATFsxt52OUl8cvkEvQgU7dQ_UzISnXV30WdFTooHpW9as8uhMeBG3IXTJzktxQ';
   const authCode_ES256 = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NWE1OWQxMC02ZTkzLTQ3ZjYtOTE4NS1hZGFjZmUyODkwN2EiLCJpYXQiOjE0OTQyMDQ5NzEuMzYxLCJleHAiOjE0OTUyMTEwMTgsImlzcyI6ImNpdmljLXNpcC1ob3N0ZWQtc2VydmljZSIsImF1ZCI6Ii9kZXYvc2NvcGVSZXF1ZXN0L2F1dGhDb2RlIiwic3ViIjoiY2l2aWMtc2lwLWhvc3RlZC1zZXJ2aWNlIiwiZGF0YSI6eyJjb2RlVG9rZW4iOiI4MWYyNTY0Yy1lN2MwLTQ4NjktYmU0OS1hODhmNTczODUzNGYifX0.U-_xgL9348VhcfGvRqdmIdkBlrYNCs9FUsDmb977mnXuIuVzQkQin8uz1f_BM8JW_1SuxeGBSKIXf4BhmpHo9g';
 
-  it('should generate ES256 NIST keypair in PEM format', function (done) {
+  it.only('should generate ES256 NIST keypair in PEM HEX and JWK formats', function (done) {
     const doneFn = done;
 
     // generate keypair and save to file in PEM format.
+
     const keyPair = rs.KEYUTIL.generateKeypair("EC", "secp256r1");
     const prvPEM = rs.KEYUTIL.getPEM(keyPair.prvKeyObj, "PKCS8PRV");
     const pubPEM = rs.KEYUTIL.getPEM(keyPair.pubKeyObj, "PKCS8PUB");
@@ -75,6 +77,28 @@ describe('jsRsaSign JWTToken module', function() {
 
     // var ec = new rs.KJUR.crypto.ECDSA({curve: curve});
     // var keypairHex = ec.generateKeyPairHex();
+
+    doneFn();
+  });
+
+  it('should generate Civic ES256 NIST public key in PEM HEX and JWK formats', function (done) {
+    const doneFn = done;
+
+    const pubKey = new rs.KJUR.crypto.ECDSA({curve: curve});
+    pubKey.setPublicKeyHex('049a45998638cfb3c4b211d72030d9ae8329a242db63bfb0076a54e7647370a8ac5708b57af6065805d5a6be72332620932dbb35e8d318fce18e7c980a0eb26aa1');
+    pubKey.isPrivate = false;
+    pubKey.isPublic = true;
+
+    // save to file in PEM, HEX and JWK formats.
+    const pubPEM = rs.KEYUTIL.getPEM(pubKey, "PKCS8PUB");
+
+    const pubJWK = rs.KEYUTIL.getJWKFromKey(pubKey);
+
+    rsu.saveFile("test/keys/civic_pub.pem", pubPEM);
+
+    rsu.saveFile("test/keys/civic_pub.hex", pubKey.pubKeyHex);
+
+    rsu.saveFile("test/keys/civic_pub.jwk", JSON.stringify(pubJWK));
 
     doneFn();
   });
@@ -168,6 +192,29 @@ describe('jsRsaSign JWTToken module', function() {
     // verify JWT
     let isValid = rs.jws.JWS.verifyJWT(authCode_ES256, pubPEM, { alg: [ALGO] });
     console.log('Verified? : ', isValid);
+
+    doneFn();
+  });
+
+  it('should verify a JWT token using ES256 key in JWK format', function (done) {
+    const jwtToken_with_encrypted_data = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2ZGIwODNmZC03NDNkLTQ0NzgtYTZhMy05N2Q2OGYwZDBhNWUiLCJpYXQiOjE0OTYyMzg1MDYuNTQsImV4cCI6MTQ5NjI0MDMwNi41NCwiaXNzIjoiY2l2aWMtc2lwLWhvc3RlZC1zZXJ2aWNlIiwiYXVkIjoiaHR0cHM6Ly9hcGkuY2l2aWMuY29tL3NpcC8iLCJzdWIiOiJIazJ4NU9GZVoiLCJkYXRhIjoiMzNmOTE0NzZjNzk4YTZhZjM0ZmZhMmU2YzQ1ZGJkYjhDaGd3SC9EMFVZWnNZc3FkT011cjlLakwxQktZbk83SGkzYkZvdFk1cjI0Y2M1YUJZZjR2bDBMbWl5R21OM3ErbUVuSTJHYjRyRkdWMldVMXhwNDM1QUlDQ2h6VlJBa2J2T25sSFBZbUlwRG1XdG9oek9vc2xqRWNrRENXZE9TbUgrTHorVTFsMkdmWjJQN1N4eWRWUFErUjBMM3Fmb1pFNm1LRlFGdzFGNGlyUHRUeVhmTXJ4SjNPaHFIMzZBTlhKcG9sdzNHcmR1VkZBZ1BnWW5zMHVEQ3hIaDBRaTJPVlFVTmpaZW5lem5ITFhBOXBRL0t6MkgzWU15WllHeXhYIn0.lbEVq81mvRZLBmW3kOE-nFPDlBgYk008J6O4RY2ld2fADrIFz7y1aBYuPHxt1nEE2D1etoH1INMffEL1rkqKVw";
+    const doneFn = done;
+
+    const pubKeyFromHex = new rs.KJUR.crypto.ECDSA({curve: curve});
+    pubKeyFromHex.setPublicKeyHex(HEX_PUBKEY_NIST);
+    pubKeyFromHex.isPrivate = false;
+    pubKeyFromHex.isPublic = true;
+
+    // read in public key in JWK format and verify token
+    const pub_JWK = rsu.readFile("test/keys/civic_pub.jwk");
+    const pub_json = JSON.parse(pub_JWK);
+    const pubKey = rs.KEYUTIL.getKey(pub_json);
+    // verify JWT
+    let isValid = rs.jws.JWS.verifyJWT(jwtToken_with_encrypted_data, pubKey, { gracePeriod: 24 * 60 * 60, alg: [ALGO] });
+    console.log('Verified? : ', isValid);
+    isValid = rs.jws.JWS.verify(jwtToken_with_encrypted_data, pubKey);
+
+    // isValid = rs.jws.JWS.verify(jwtToken_with_encrypted_data, {hex: '6f62ad...'}, ['HS256']);
 
     doneFn();
   });
@@ -379,22 +426,60 @@ describe('Encryption and decryption', function() {
     doneFn();
   });
 
-  it.only('should create and verify JWT token with encrypted data.', function(done) {
+  it('should create and verify JWT token with encrypted data and decrypt.', function(done) {
 
     const doneFn = done;
-    const cipherObj = CryptoJS.AES.encrypt(userData, SECRET);
+    const cipherText = basicCrypto.encrypt(userData, SECRET);
 
     const token = jwt.createToken('civic-sip-hosted-service', 'https://api.civic.com/sip/', 'aaa123',
-      '20m', cipherObj.toString(), HEX_PRVKEY_NIST);
+      '20m', cipherText, HEX_PRVKEY_NIST);
 
     const isValid = jwt.verify(token, HEX_PUBKEY_NIST, { gracePeriod: 30, });
     assert(isValid, 'JWT Token containing encrypted data could not be verified.');
 
     // decrypt the data
     const decodedToken = jwt.decode(token);
-    const clearData = CryptoJS.AES.decrypt(decodedToken.payloadObj.data, SECRET);
-    const decryptedText = clearData.toString(CryptoJS.enc.Utf8);
-    assert(decryptedText === userData, 'Decrypted Token data does match original input.');
+    const clearData = basicCrypto.decrypt(decodedToken.payloadObj.data, SECRET);
+    // const decryptedText = clearData.toString(CryptoJS.enc.Utf8);
+    assert(clearData === userData, 'Decrypted Token data does match original input.');
     doneFn();
   });
+
+  it('should verify JWT token with encrypted data and decrypt.', function(done) {
+
+    const doneFn = done;
+    const payloadDataOrig = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3MDcwM2ZiZS0yYTdlLTQ4ZjktYjA5Ny0xMDhjZDgyMThhNjYiLCJpYXQiOjE0OTYxODY1NzUuNjM4LCJleHAiOjE0OTYxODgzNzUuNjM4LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6IkhrMng1T0ZlWiIsImRhdGEiOiIzNzQyYTNhYWEzNzgyZDdmOWU1NTRlZjVkMWI5OWFmN1UyRnNkR1ZrWDErOHBMYXF2alcxbkcyTkpqSUp5Y053ekNMNG5KcDF3MGFyQ09lcjVKUE1FOFRJTmgxaEsvTkhoTmtzU0ZJN0FuVGo3eGYraENvS09YTHd6N1IyemZaV1BUUGZUNk9POFBSMlB5SHFzWXdpeXY0ekVZa2ZUcmJXUWJWK0xiNW0veHVEb2pJN3htRk1oOVdTMWNIaWl5aVN3eTJxRXgvUjFOVGlvSzNQTVZqT0p0cHIzVGVCYWJ1ODREV0p4SUJNVTFaa3lBTUVybDVxdGxjSVVEVDFIWkNET1BJQStaWDlWM0VkbXBBaVBwZzVRTHhsK1ZaTCs2aC9tY3VBQ05yV3RBdVB5MkZjVVVZVllRPT0ifQ.dTwUE1hSqUh0yOBv1CQ-tBytmiaRZq-4j8iomq9z5UqwBEA3oIXS3EZaTKZXlhZWpuPTb-Mmqs7UYV5b7t94qQ';
+    const payloadData2 = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMzdmM2UyZS1jYTQ4LTQwMGYtYWY3Zi05YzcxZGNjNjFmNTQiLCJpYXQiOjE0OTYyMTI2MTMuNTQ1LCJleHAiOjE0OTYyMTQ0MTMuNTQ1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6IkhrMng1T0ZlWiIsImRhdGEiOiJiNDRhNTBlZmJkMTk1NGZiNThlZDViMWM1NTBmMGY0NUFtdXQvOUpBemMrRW1pMHpHVmMrVGhtZkkwKzFtSEhQd3RPTkpQNDIvUXV2ZUpWbyt2Y1J6cVpVZnIvNUdOUFUySzlRTDRndXpjT0dKV3BTUnprN08vUys0NE9vdFdlMEdISXBaTjBnU0pROVAzVVpzb2VTM1Iyd2QwVXFhTmtnMWxic09NZFQ2aktvZzVKR0hmSkxabjkxVjhjSURyNGw0RTc2SWVwQ1VmUjRVaVc4Y0Z4RGZSai8vanBkOW1wK0lQcGFjQi9CcU5LTGRoTXRETUpJMk1MN0FQNVRxWW03TndHM2hOWit5dlhINzJjYlFHWXhiYmloVVZHTXVoUjQifQ.-ch3X5l9Yf7LDpx94fapSObuedfRHKiXqyKOSm-ev1uXTMyqes30OofQ8xz8NYJxxZGwm30PPlPoAvtV73bO6w';
+    const payloadData  = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMzdmM2UyZS1jYTQ4LTQwMGYtYWY3Zi05YzcxZGNjNjFmNTQiLCJpYXQiOjE0OTYyMTI2MTMuNTQ1LCJleHAiOjE0OTYyMTQ0MTMuNTQ1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6IkhrMng1T0ZlWiIsImRhdGEiOiJiNDRhNTBlZmJkMTk1NGZiNThlZDViMWM1NTBmMGY0NUFtdXQvOUpBemMrRW1pMHpHVmMrVGhtZkkwKzFtSEhQd3RPTkpQNDIvUXV2ZUpWbyt2Y1J6cVpVZnIvNUdOUFUySzlRTDRndXpjT0dKV3BTUnprN08vUys0NE9vdFdlMEdISXBaTjBnU0pROVAzVVpzb2VTM1Iyd2QwVXFhTmtnMWxic09NZFQ2aktvZzVKR0hmSkxabjkxVjhjSURyNGw0RTc2SWVwQ1VmUjRVaVc4Y0Z4RGZSai8vanBkOW1wK0lQcGFjQi9CcU5LTGRoTXRETUpJMk1MN0FQNVRxWW03TndHM2hOWit5dlhINzJjYlFHWXhiYmloVVZHTXVoUjQifQ.7LqXPbUwyscpjYqnevAchatXRcDtiiaymtM54ztMgOU';
+
+    const cipherText = basicCrypto.encrypt(userData, SECRET);
+
+    const acceptable = { gracePeriod: 24 * 60 * 60, };
+    const isValid = jwt.verify(payloadData, HEX_PUBKEY_NIST, acceptable);
+    // assert(isValid, 'JWT Token containing encrypted data could not be verified.');
+
+    // decrypt the data
+    const decodedToken = jwt.decode(payloadData);
+    const clearData = basicCrypto.decrypt(decodedToken.payloadObj.data, 'D37E1D26FA40995F622E1BF4F6552B12');
+    // assert(clearData === userData, 'Decrypted Token data does match original input.');
+    doneFn();
+  });
+
+  it('test', function(done) {
+
+    const doneFn = done;
+    const cipherText = basicCrypto.encrypt("test message to get encrypted", SECRET);
+
+    const token = jwt.createToken('civic-sip-hosted-service', 'https://api.civic.com/sip/', 'aaa123',
+      '20m', cipherText, HEX_PRVKEY_NIST);
+
+    const isValid = jwt.verify(token, HEX_PUBKEY_NIST, { gracePeriod: 30, });
+    assert(isValid, 'JWT Token containing encrypted data could not be verified.');
+
+    // decrypt the data
+    const decodedToken = jwt.decode(token);
+    const clearData = basicCrypto.decrypt(decodedToken.payloadObj.data, SECRET);
+    doneFn();
+  });
+
 })
