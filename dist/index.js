@@ -54,7 +54,7 @@ sipClientFactory.newClient = function (config) {
               data = void 0, errorObj = void 0;
               _context.prev = 7;
               _context.next = 10;
-              return apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams, config.apiKey);
+              return apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams);
 
             case 10:
               response = _context.sent;
@@ -71,7 +71,7 @@ sipClientFactory.newClient = function (config) {
               break;
 
             case 16:
-              return _context.abrupt("return", verifyAndDecrypt(response.data));
+              return _context.abrupt("return", Promise.resolve(verifyAndDecrypt(response.data)));
 
             case 17:
               _context.next = 23;
@@ -82,7 +82,7 @@ sipClientFactory.newClient = function (config) {
               _context.t0 = _context["catch"](7);
 
               console.log('Civic ERROR response: ', JSON.stringify(_context.t0, null, 2));
-              throw new Error('Error exchanging code for data: ' + _context.t0.message);
+              errorObj = new Error('Error exchanging code for data: ' + _context.t0.data && _context.t0.data.message);
 
             case 23:
               if (!errorObj) {
@@ -90,7 +90,7 @@ sipClientFactory.newClient = function (config) {
                 break;
               }
 
-              throw errorObj;
+              return _context.abrupt("return", Promise.reject(errorObj));
 
             case 25:
             case "end":

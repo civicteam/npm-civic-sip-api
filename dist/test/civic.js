@@ -49,11 +49,11 @@ function generateToken(prvKeyObj, expStr) {
 describe('jsRsaSign JWTToken module', function () {
   this.timeout(10000);
   var tokenES256 = void 0;
-  SkK_cm0ZW;
+
   var authCode = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVYp13UBCyATFsxt52OUl8cvkEvQgU7dQ_UzISnXV30WdFTooHpW9as8uhMeBG3IXTJzktxQ';
   var authCode_ES256 = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NWE1OWQxMC02ZTkzLTQ3ZjYtOTE4NS1hZGFjZmUyODkwN2EiLCJpYXQiOjE0OTQyMDQ5NzEuMzYxLCJleHAiOjE0OTUyMTEwMTgsImlzcyI6ImNpdmljLXNpcC1ob3N0ZWQtc2VydmljZSIsImF1ZCI6Ii9kZXYvc2NvcGVSZXF1ZXN0L2F1dGhDb2RlIiwic3ViIjoiY2l2aWMtc2lwLWhvc3RlZC1zZXJ2aWNlIiwiZGF0YSI6eyJjb2RlVG9rZW4iOiI4MWYyNTY0Yy1lN2MwLTQ4NjktYmU0OS1hODhmNTczODUzNGYifX0.U-_xgL9348VhcfGvRqdmIdkBlrYNCs9FUsDmb977mnXuIuVzQkQin8uz1f_BM8JW_1SuxeGBSKIXf4BhmpHo9g';
 
-  it.only('should generate ES256 NIST keypair in PEM HEX and JWK formats', function (done) {
+  it('should generate ES256 NIST keypair in PEM HEX and JWK formats', function (done) {
     var doneFn = done;
 
     // generate keypair and save to file in PEM format.
@@ -334,8 +334,8 @@ describe('jsRsaSign JWTToken module', function () {
 describe('Civic SIP Server', function () {
   this.timeout(10000);
 
-  var API = 'https://ah0y3xrqs1.execute-api.us-east-1.amazonaws.com/',
-      STAGE = 'ci',
+  var API = 'https://ph4x580815.execute-api.us-east-1.amazonaws.com/',
+      STAGE = 'dev',
       authCode = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVYp13UBCyATFsxt52OUl8cvkEvQgU7dQ_UzISnXV30WdFTooHpW9as8uhMeBG3IXTJzktxQ';
 
   var civicClient = civicSip.newClient({
@@ -376,7 +376,7 @@ describe('Civic SIP Server', function () {
     });
   });
 
-  it('should exchange authCode for user data.', function (done) {
+  it.only('should exchange authCode for user data.', function (done) {
     var doneFn = done;
 
     civicClient.exchangeCode(authCode).then(function (data) {

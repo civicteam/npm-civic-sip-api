@@ -190,21 +190,21 @@ sipClientFactory.newClient = function (config) {
 
     try {
 
-      const response = await apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams, config.apiKey);
+      const response = await apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams);
       console.log('Civic response: ', JSON.stringify(response, null, 2));
       if (response.status != 200) {
         errorObj = new Error('Error exchanging code for data: ' , response.status);
       } else {
-        return verifyAndDecrypt(response.data);
+        return Promise.resolve(verifyAndDecrypt(response.data));
       }
 
     } catch(error) {
-      console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
-      throw new Error('Error exchanging code for data: ' + error.message);
+       console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
+      errorObj =  new Error('Error exchanging code for data: ' + error.data && error.data.message);
     }
 
     if (errorObj) {
-      throw errorObj;
+      return Promise.reject(errorObj);
     }
 
   };

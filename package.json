@@ -1,6 +1,6 @@
 {
   "name": "civic-sip-api",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Server-side library for the Civic Secure Identity platform.",
   "main": "dist/index.js",
   "files": [
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "grunt",
-    "test": "cd dist && mocha --compilers js:babel-core/register",
+    "test": "mocha --compilers js:babel-core/register",
     "watch": "npm run dist -- --watch"
   },
   "homepage": "https://github.com/civicteam/npm-civic-sip-api",

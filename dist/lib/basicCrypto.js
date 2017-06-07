@@ -27,9 +27,6 @@ function encrypt(msg, key) {
 
   });
 
-  console.log('encrypted.iv: ', encrypted.iv.toString());
-  console.log('encrypted.key: ', encrypted.key.toString());
-
   // append iv - 32 bytes in hex
   var cipherText = '';
 
