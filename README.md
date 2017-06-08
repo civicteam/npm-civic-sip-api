@@ -16,12 +16,15 @@ $ npm install civic-sip-api --save
 
 import * as civicSip from 'civic-sip-api';
 
-const civicClient = civicSip.newClient({ appId: 'ABC123', appSecret: APP_SECRET });
+const civicClient = civicSip.newClient({ appId: 'ABC123',
+                                         appSecret: APP_SECRET,
+                                         prvKey: PRV_KEY,
+                                      });
 
 civicClient.exchangeCode(jwtToken)
     .then(function(userData) {
         // store user data and userId as appropriate
-        console.log("userData = " + EJSON.stringify(userData));
+        console.log("userData = " + JSON.stringify(userData));
 
         /*  example for response to a CIVIC_BASIC scope request:
             userData = {
@@ -40,7 +43,7 @@ civicClient.exchangeCode(jwtToken)
                     },
                     {
                         "label": "contact.personal.phoneNumber",
-                        "value": "+1 415-618-7380",
+                        "value": "+1 555-618-7380",
                         "isValid": true,
                         "isOwner": true
                     }

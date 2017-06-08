@@ -59,45 +59,43 @@ sipClientFactory.newClient = function (config) {
             case 10:
               response = _context.sent;
 
-              console.log('Civic response: ', JSON.stringify(response, null, 2));
-
               if (!(response.status != 200)) {
-                _context.next = 16;
+                _context.next = 15;
                 break;
               }
 
               errorObj = new Error('Error exchanging code for data: ', response.status);
-              _context.next = 17;
+              _context.next = 16;
               break;
+
+            case 15:
+              return _context.abrupt("return", verifyAndDecrypt(response.data));
 
             case 16:
-              return _context.abrupt("return", Promise.resolve(verifyAndDecrypt(response.data)));
-
-            case 17:
-              _context.next = 23;
+              _context.next = 21;
               break;
 
-            case 19:
-              _context.prev = 19;
+            case 18:
+              _context.prev = 18;
               _context.t0 = _context["catch"](7);
 
-              console.log('Civic ERROR response: ', JSON.stringify(_context.t0, null, 2));
+              // console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
               errorObj = new Error('Error exchanging code for data: ' + _context.t0.data && _context.t0.data.message);
 
-            case 23:
+            case 21:
               if (!errorObj) {
-                _context.next = 25;
+                _context.next = 23;
                 break;
               }
 
-              return _context.abrupt("return", Promise.reject(errorObj));
+              throw errorObj;
 
-            case 25:
+            case 23:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, this, [[7, 19]]);
+      }, _callee, this, [[7, 18]]);
     }));
 
     return function exchangeCode(_x) {

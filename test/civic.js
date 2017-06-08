@@ -383,7 +383,7 @@ describe('Civic SIP Server', function() {
 
   });
 
-  it.only('should exchange authCode for user data.', function(done) {
+  it('should exchange authCode for user data.', function(done) {
     const doneFn = done;
 
       civicClient.exchangeCode(authCode).then(function(data) {
@@ -397,7 +397,7 @@ describe('Civic SIP Server', function() {
   });
 
   /*
-  it('should exchange authCode for user data in async fashion.', async function(done) {
+  it.only('should exchange authCode for user data in async fashion.', async function(done) {
     const doneFn = done;
 
     try {
