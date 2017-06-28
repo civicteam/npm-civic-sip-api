@@ -151,7 +151,12 @@ sipClientFactory.newClient = function (config) {
       console.log('Error parsing decrypted string to user data: ' + e.message);
     }
 
-    return userData;
+    const decryptedPayload = {
+        data: userData,
+        userId: payload.userId,
+    };
+
+    return decryptedPayload;
   }
   /**
    * Exchange authorization code in the form of a JWT Token for the user data
