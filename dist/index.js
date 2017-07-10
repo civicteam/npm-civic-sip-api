@@ -240,7 +240,12 @@ sipClientFactory.newClient = function (config) {
       console.log('Error parsing decrypted string to user data: ' + e.message);
     }
 
-    return userData;
+    var decryptedPayload = {
+      data: userData,
+      userId: payload.userId
+    };
+
+    return decryptedPayload;
   };
 
   apigClient.exchangeCode = exchangeCode;
