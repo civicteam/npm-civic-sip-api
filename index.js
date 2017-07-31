@@ -1,6 +1,8 @@
 "use strict";
 
-require("babel-polyfill");
+if (!global._babelPolyfill) {
+  require('babel-polyfill');
+}
 
 const stringify = require('json-stringify');
 const uritemplate = require('./lib/url-template/url-template');
