@@ -157,10 +157,10 @@ describe('jsRsaSign JWTToken module', function () {
     // read in prv key and sign token
     var prv_JWK = rsu.readFile("test/keys/prvJWK_Key_verify_test.bin");
     var prvKey = JSON.parse(prv_JWK);
-    var token = generateToken(prvKey);
+    var token = generateToken(prvKey
 
     // read in public key in JWK format and verify token
-    var pub_JWK = rsu.readFile("test/keys/pubJWK_Key_verify_test.bin");
+    );var pub_JWK = rsu.readFile("test/keys/pubJWK_Key_verify_test.bin");
     var pub_json = JSON.parse(pub_JWK);
     var pubKey = rs.KEYUTIL.getKey(pub_json);
     // verify JWT
@@ -242,10 +242,10 @@ describe('jsRsaSign JWTToken module', function () {
     var allowedMethod = tokenDetails.data.method;
     var allowedPath = tokenDetails.data.path;
     assert(allowedMethod === 'POST', 'POST must be specified.');
-    assert(allowedPath === 'scopeRequest/authCode', 'incorrect path.');
+    assert(allowedPath === 'scopeRequest/authCode', 'incorrect path.'
 
     // partner public key
-    var pubKey = new rs.KJUR.crypto.ECDSA({ curve: curve });
+    );var pubKey = new rs.KJUR.crypto.ECDSA({ curve: curve });
     pubKey.setPublicKeyHex(partner_pub_key);
     pubKey.isPrivate = false;
     pubKey.isPublic = true;
