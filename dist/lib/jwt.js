@@ -7,6 +7,12 @@
 
 "use strict";
 
+var _stringify = require('babel-runtime/core-js/json/stringify');
+
+var _stringify2 = _interopRequireDefault(_stringify);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var rs = require('jsrsasign');
 var uuidV4 = require('uuid/v4');
 var timestamp = require('unix-timestamp');
@@ -33,8 +39,8 @@ exports.createToken = function (issuer, audience, subject, expiresIn, payload, p
   };
 
   var header = { alg: ALGO, typ: "JWT" },
-      sHeader = JSON.stringify(header),
-      sContent = JSON.stringify(content);
+      sHeader = (0, _stringify2.default)(header),
+      sContent = (0, _stringify2.default)(content);
 
   // create ECDSA key object with Hex input
   var prvKey = new rs.KJUR.crypto.ECDSA({ curve: CURVE });

@@ -1,5 +1,11 @@
 'use strict';
 
+var _stringify = require('babel-runtime/core-js/json/stringify');
+
+var _stringify2 = _interopRequireDefault(_stringify);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 require('babel-polyfill');
 require('babel-core/register');
 
@@ -40,8 +46,8 @@ function generateToken(prvKeyObj, expStr) {
   };
 
   var header = { alg: ALGO, typ: "JWT" },
-      sHeader = JSON.stringify(header),
-      sPayload = JSON.stringify(payload);
+      sHeader = (0, _stringify2.default)(header),
+      sPayload = (0, _stringify2.default)(payload);
 
   return rs.jws.JWS.sign(null, sHeader, sPayload, prvKeyObj);
 }
@@ -71,8 +77,8 @@ describe('jsRsaSign JWTToken module', function () {
     rsu.saveFile("test/keys/prv.hex", keyPair.prvKeyObj.prvKeyHex);
     rsu.saveFile("test/keys/pub.hex", keyPair.pubKeyObj.pubKeyHex);
 
-    rsu.saveFile("test/keys/prv.jwk", JSON.stringify(prvJWK));
-    rsu.saveFile("test/keys/pub.jwk", JSON.stringify(pubJWK));
+    rsu.saveFile("test/keys/prv.jwk", (0, _stringify2.default)(prvJWK));
+    rsu.saveFile("test/keys/pub.jwk", (0, _stringify2.default)(pubJWK));
 
     // var ec = new rs.KJUR.crypto.ECDSA({curve: curve});
     // var keypairHex = ec.generateKeyPairHex();
@@ -97,7 +103,7 @@ describe('jsRsaSign JWTToken module', function () {
 
     rsu.saveFile("test/keys/civic_pub.hex", pubKey.pubKeyHex);
 
-    rsu.saveFile("test/keys/civic_pub.jwk", JSON.stringify(pubJWK));
+    rsu.saveFile("test/keys/civic_pub.jwk", (0, _stringify2.default)(pubJWK));
 
     doneFn();
   });
@@ -151,8 +157,8 @@ describe('jsRsaSign JWTToken module', function () {
     var pubJWK = rs.KEYUTIL.getJWKFromKey(keyPair.pubKeyObj);
 
     // save JW keys to file
-    rsu.saveFile("test/keys/prvJWK_Key_verify_test.bin", JSON.stringify(prvJWK));
-    rsu.saveFile("test/keys/pubJWK_Key_verify_test.bin", JSON.stringify(pubJWK));
+    rsu.saveFile("test/keys/prvJWK_Key_verify_test.bin", (0, _stringify2.default)(prvJWK));
+    rsu.saveFile("test/keys/pubJWK_Key_verify_test.bin", (0, _stringify2.default)(pubJWK));
 
     // read in prv key and sign token
     var prv_JWK = rsu.readFile("test/keys/prvJWK_Key_verify_test.bin");
@@ -301,8 +307,8 @@ describe('jsRsaSign JWTToken module', function () {
     };
 
     var header = { alg: ALGO, typ: "JWT" },
-        sHeader = JSON.stringify(header),
-        sPayload = JSON.stringify(payload);
+        sHeader = (0, _stringify2.default)(header),
+        sPayload = (0, _stringify2.default)(payload);
 
     var prvKey = new rs.KJUR.crypto.ECDSA({ curve: curve });
     prvKey.setPrivateKeyHex(HEX_PRVKEY_NIST);
@@ -351,7 +357,7 @@ describe('Civic SIP Server', function () {
 
     var BAD_AUTH_HEADER = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJqdGkiOiI1Y2QxY2RiMS05NWRkLTQ5MWYtODE4Mi1mZTdkNmE1NmEzZjciLCJpYXQiOjE0OTQ3MDU2NzAuNzYzLCJleHAiOjE0OTQ3MDU4NTAuNzYzLCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiNWVhNjkwN2EtMTQ0MS00NTIwLWFlYmItYjIwOTQ1NjYwM2I2In19.Ih5n-CuzbwcpfOFVY';
     var body = { authToken: authCode };
-    var contentLength = Buffer.byteLength(JSON.stringify(body));
+    var contentLength = Buffer.byteLength((0, _stringify2.default)(body));
     var options = {
       headers: {
         'Content-Length': contentLength,
@@ -366,7 +372,7 @@ describe('Civic SIP Server', function () {
 
     needle.post(url, body, options, function (err, resp) {
       if (err) {
-        console.log('Error: ', JSON.stringify(err, null, 2));
+        console.log('Error: ', (0, _stringify2.default)(err, null, 2));
         doneFn(err);
       } else {
         console.log('statusCode: ', resp.statusCode);
