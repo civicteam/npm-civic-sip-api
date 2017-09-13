@@ -1,9 +1,5 @@
 "use strict";
 
-if (!global._babelPolyfill) {
-  require('babel-polyfill');
-}
-
 const stringify = require('json-stringify');
 const uritemplate = require('./lib/url-template/url-template');
 const apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');

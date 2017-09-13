@@ -1,6 +1,10 @@
 "use strict";
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof2 = require("babel-runtime/helpers/typeof");
+
+var _typeof3 = _interopRequireDefault(_typeof2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var sjcl = { cipher: {}, hash: {}, keyexchange: {}, mode: {}, misc: {}, codec: {}, exception: { corrupt: function corrupt(a) {
       this.toString = function () {
@@ -418,7 +422,7 @@ sjcl.prng.prototype = { randomWords: function randomWords(a, b) {
         f = new Date().valueOf(),
         g = this.P[c],
         h = this.isReady(),
-        k = 0;d = this.ba[c];void 0 === d && (d = this.ba[c] = this.ra++);void 0 === g && (g = this.P[c] = 0);this.P[c] = (this.P[c] + 1) % this.h.length;switch (typeof a === "undefined" ? "undefined" : _typeof(a)) {case "number":
+        k = 0;d = this.ba[c];void 0 === d && (d = this.ba[c] = this.ra++);void 0 === g && (g = this.P[c] = 0);this.P[c] = (this.P[c] + 1) % this.h.length;switch (typeof a === "undefined" ? "undefined" : (0, _typeof3.default)(a)) {case "number":
         void 0 === b && (b = 1);this.h[g].update([d, this.W++, 1, b, f, 1, a | 0]);break;case "object":
         c = Object.prototype.toString.call(a);if ("[object Uint32Array]" === c) {
           e = [];for (c = 0; c < a.length; c++) {
@@ -524,7 +528,7 @@ sjcl.json = { defaults: { v: 1, iter: 1E4, ks: 128, ts: 64, mode: "ccm", adata: 
         c = "{",
         d = "";for (b in a) {
       if (a.hasOwnProperty(b)) {
-        if (!b.match(/^[a-z0-9]+$/i)) throw new sjcl.exception.invalid("json encode: invalid property name");c += d + '"' + b + '":';d = ",";switch (_typeof(a[b])) {case "number":case "boolean":
+        if (!b.match(/^[a-z0-9]+$/i)) throw new sjcl.exception.invalid("json encode: invalid property name");c += d + '"' + b + '":';d = ",";switch ((0, _typeof3.default)(a[b])) {case "number":case "boolean":
             c += a[b];break;case "string":
             c += '"' + escape(a[b]) + '"';break;case "object":
             c += '"' + sjcl.codec.base64.fromBits(a[b], 0) + '"';break;default:
@@ -564,7 +568,7 @@ sjcl.bn.prototype = { radix: 24, maxMul: 8, f: sjcl.bn, copy: function copy() {
     return new this.f(this);
   }, initWith: function initWith(a) {
     var b = 0,
-        c;switch (typeof a === "undefined" ? "undefined" : _typeof(a)) {case "object":
+        c;switch (typeof a === "undefined" ? "undefined" : (0, _typeof3.default)(a)) {case "object":
         this.limbs = a.limbs.slice(0);break;case "number":
         this.limbs = [a];this.normalize();break;case "string":
         a = a.replace(/^0x/, "");this.limbs = [];c = this.radix / 4;for (b = 0; b < a.length; b += c) {
@@ -597,7 +601,7 @@ sjcl.bn.prototype = { radix: 24, maxMul: 8, f: sjcl.bn, copy: function copy() {
       }a = c + a;
     }return "0x" + a;
   }, addM: function addM(a) {
-    "object" !== (typeof a === "undefined" ? "undefined" : _typeof(a)) && (a = new this.f(a));var b = this.limbs,
+    "object" !== (typeof a === "undefined" ? "undefined" : (0, _typeof3.default)(a)) && (a = new this.f(a));var b = this.limbs,
         c = a.limbs;for (a = b.length; a < c.length; a++) {
       b[a] = 0;
     }for (a = 0; a < c.length; a++) {
@@ -621,7 +625,7 @@ sjcl.bn.prototype = { radix: 24, maxMul: 8, f: sjcl.bn, copy: function copy() {
       c = e[a], e[a] = c + b >> 1, b = (c & 1) << d;
     }e[e.length - 1] || e.pop();return this;
   }, subM: function subM(a) {
-    "object" !== (typeof a === "undefined" ? "undefined" : _typeof(a)) && (a = new this.f(a));var b = this.limbs,
+    "object" !== (typeof a === "undefined" ? "undefined" : (0, _typeof3.default)(a)) && (a = new this.f(a));var b = this.limbs,
         c = a.limbs;for (a = b.length; a < c.length; a++) {
       b[a] = 0;
     }for (a = 0; a < c.length; a++) {
@@ -815,7 +819,7 @@ sjcl.bn.pseudoMersennePrime = function (a, b) {
 };var I = sjcl.bn.pseudoMersennePrime;
 sjcl.bn.prime = { p127: I(127, [[0, -1]]), p25519: I(255, [[0, -19]]), p192k: I(192, [[32, -1], [12, -1], [8, -1], [7, -1], [6, -1], [3, -1], [0, -1]]), p224k: I(224, [[32, -1], [12, -1], [11, -1], [9, -1], [7, -1], [4, -1], [1, -1], [0, -1]]), p256k: I(0x100, [[32, -1], [9, -1], [8, -1], [7, -1], [6, -1], [4, -1], [0, -1]]), p192: I(192, [[0, -1], [64, -1]]), p224: I(224, [[0, 1], [96, -1]]), p256: I(0x100, [[0, -1], [96, 1], [192, 1], [224, -1]]), p384: I(384, [[0, -1], [32, 1], [96, -1], [128, -1]]), p521: I(521, [[0, -1]]) };
 sjcl.bn.random = function (a, b) {
-  "object" !== (typeof a === "undefined" ? "undefined" : _typeof(a)) && (a = new sjcl.bn(a));for (var c, d, e = a.limbs.length, f = a.limbs[e - 1] + 1, g = new sjcl.bn();;) {
+  "object" !== (typeof a === "undefined" ? "undefined" : (0, _typeof3.default)(a)) && (a = new sjcl.bn(a));for (var c, d, e = a.limbs.length, f = a.limbs[e - 1] + 1, g = new sjcl.bn();;) {
     do {
       c = sjcl.random.randomWords(e, b), 0 > c[e - 1] && (c[e - 1] += 0x100000000);
     } while (Math.floor(c[e - 1] / f) === Math.floor(0x100000000 / f));c[e - 1] %= f;for (d = 0; d < e - 1; d++) {

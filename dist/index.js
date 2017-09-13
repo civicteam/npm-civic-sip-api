@@ -1,8 +1,18 @@
 "use strict";
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+var _regenerator = require('babel-runtime/regenerator');
 
-require("babel-polyfill");
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _stringify = require('babel-runtime/core-js/json/stringify');
+
+var _stringify2 = _interopRequireDefault(_stringify);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var stringify = require('json-stringify');
 var uritemplate = require('./lib/url-template/url-template');
@@ -24,15 +34,15 @@ sipClientFactory.newClient = function (config) {
    */
 
   var exchangeCode = function () {
-    var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(jwtToken) {
+    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(jwtToken) {
       var body, authHeader, contentLength, additionalParams, params, scopeRequestAuthCodePostRequest, data, errorObj, response;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regenerator2.default.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               body = { authToken: jwtToken };
               authHeader = makeAuthorizationHeader('scopeRequest/authCode', 'POST', body);
-              contentLength = Buffer.byteLength(JSON.stringify(body));
+              contentLength = Buffer.byteLength((0, _stringify2.default)(body));
               additionalParams = {
                 // If there are any unmodeled query parameters or headers that must be
                 //   sent with the request, add them here.
@@ -69,7 +79,7 @@ sipClientFactory.newClient = function (config) {
               break;
 
             case 15:
-              return _context.abrupt("return", verifyAndDecrypt(response.data));
+              return _context.abrupt('return', verifyAndDecrypt(response.data));
 
             case 16:
               _context.next = 21;
@@ -77,7 +87,7 @@ sipClientFactory.newClient = function (config) {
 
             case 18:
               _context.prev = 18;
-              _context.t0 = _context["catch"](7);
+              _context.t0 = _context['catch'](7);
 
               // console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
               errorObj = new Error('Error exchanging code for data: ' + _context.t0.data && _context.t0.data.message);
@@ -91,7 +101,7 @@ sipClientFactory.newClient = function (config) {
               throw errorObj;
 
             case 23:
-            case "end":
+            case 'end':
               return _context.stop();
           }
         }
