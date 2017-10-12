@@ -34,7 +34,7 @@ sipClientFactory.newClient = function (config) {
    */
 
   var exchangeCode = function () {
-    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(jwtToken) {
+    var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(jwtToken) {
       var body, authHeader, contentLength, additionalParams, params, scopeRequestAuthCodePostRequest, data, errorObj, response;
       return _regenerator2.default.wrap(function _callee$(_context) {
         while (1) {
@@ -74,7 +74,7 @@ sipClientFactory.newClient = function (config) {
                 break;
               }
 
-              errorObj = new Error('Error exchanging code for data: ', response.status);
+              errorObj = new Error('Error exchanging code for data: ' + response.status);
               _context.next = 16;
               break;
 
@@ -90,7 +90,7 @@ sipClientFactory.newClient = function (config) {
               _context.t0 = _context['catch'](7);
 
               // console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
-              errorObj = new Error('Error exchanging code for data: ' + _context.t0.data && _context.t0.data.message);
+              errorObj = new Error('Error exchanging code for data: ' + (_context.t0.data.message || _context.t0.data));
 
             case 21:
               if (!errorObj) {
