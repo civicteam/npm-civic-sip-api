@@ -1,6 +1,7 @@
 "use strict";
 
 const stringify = require('json-stringify');
+const util = require('util');
 const uritemplate = require('./lib/url-template/url-template');
 const apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
 const basicCrypto = require('./lib/basicCrypto');
@@ -192,7 +193,6 @@ sipClientFactory.newClient = function (config) {
     let data, errorObj;
 
     try {
-
       const response = await apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams);
       // console.log('Civic response: ', JSON.stringify(response, null, 2));
       if (response.status != 200) {
@@ -202,8 +202,20 @@ sipClientFactory.newClient = function (config) {
       }
 
     } catch(error) {
-      // console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
-      errorObj = new Error('Error exchanging code for data: ' + (error.data.message || error.data));
+      // console.log('Civic ERROR response: ', util.inspect(error));
+
+      let errorStr;
+      if (typeof error === 'string') {
+        errorStr = error;
+      } else if (error.data && error.data.message) {
+        errorStr = error.data.message;
+      } else if (error.data) {
+        errorStr = error.data;
+      } else {
+        errorStr = util.inspect(error);
+      }
+
+      errorObj = new Error('Error exchanging code for data: ' + errorStr);
     }
 
     if (errorObj) {
