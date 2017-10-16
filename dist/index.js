@@ -15,6 +15,7 @@ var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var stringify = require('json-stringify');
+var util = require('util');
 var uritemplate = require('./lib/url-template/url-template');
 var apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
 var basicCrypto = require('./lib/basicCrypto');
@@ -34,8 +35,8 @@ sipClientFactory.newClient = function (config) {
    */
 
   var exchangeCode = function () {
-    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(jwtToken) {
-      var body, authHeader, contentLength, additionalParams, params, scopeRequestAuthCodePostRequest, data, errorObj, response;
+    var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(jwtToken) {
+      var body, authHeader, contentLength, additionalParams, params, scopeRequestAuthCodePostRequest, data, errorObj, response, errorStr;
       return _regenerator2.default.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
@@ -74,7 +75,7 @@ sipClientFactory.newClient = function (config) {
                 break;
               }
 
-              errorObj = new Error('Error exchanging code for data: ', response.status);
+              errorObj = new Error('Error exchanging code for data: ' + response.status);
               _context.next = 16;
               break;
 
@@ -82,25 +83,38 @@ sipClientFactory.newClient = function (config) {
               return _context.abrupt('return', verifyAndDecrypt(response.data));
 
             case 16:
-              _context.next = 21;
+              _context.next = 23;
               break;
 
             case 18:
               _context.prev = 18;
               _context.t0 = _context['catch'](7);
 
-              // console.log('Civic ERROR response: ', JSON.stringify(error, null, 2));
-              errorObj = new Error('Error exchanging code for data: ' + _context.t0.data && _context.t0.data.message);
+              // console.log('Civic ERROR response: ', util.inspect(error));
 
-            case 21:
+              errorStr = void 0;
+
+              if (typeof _context.t0 === 'string') {
+                errorStr = _context.t0;
+              } else if (_context.t0.data && _context.t0.data.message) {
+                errorStr = _context.t0.data.message;
+              } else if (_context.t0.data) {
+                errorStr = _context.t0.data;
+              } else {
+                errorStr = util.inspect(_context.t0);
+              }
+
+              errorObj = new Error('Error exchanging code for data: ' + errorStr);
+
+            case 23:
               if (!errorObj) {
-                _context.next = 23;
+                _context.next = 25;
                 break;
               }
 
               throw errorObj;
 
-            case 23:
+            case 25:
             case 'end':
               return _context.stop();
           }
