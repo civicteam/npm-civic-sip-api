@@ -1,5 +1,9 @@
 # civic-sip-api
 
+[![NPM version](http://img.shields.io/npm/v/civic-sip-api.svg?style=flat-square)](https://www.npmjs.com/package/civic-sip-api)
+[![NPM downloads](http://img.shields.io/npm/dm/civic-sip-api.svg?style=flat-square)](https://www.npmjs.com/package/civic-sip-api)
+[![node version](http://img.shields.io/npm/v/civic-sip-api.svg?style=flat-square)](https://www.npmjs.com/package/civic-sip-api)
+
 Node.js wrapper for the Civic hosted SIP API.  For best results, be sure that you're using the latest version.
 
 ### Installation
