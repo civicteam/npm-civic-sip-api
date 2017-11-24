@@ -4,3 +4,4 @@ node_modules
 .idea
 /.idea
 /doc/.idea
+/test/keys
