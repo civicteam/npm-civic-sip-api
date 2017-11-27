@@ -8,64 +8,53 @@ Node.js wrapper for the Civic hosted SIP API.  For best results, be sure that yo
 
 ### Installation
 
-civic-sip-api can be installed from npm:
+`civic-sip-api` can be installed from npm:
 
-```
-$ npm install civic-sip-api --save
-
+```shell
+npm install civic-sip-api --save
 ```
 
 ### Usage
 ```javascript
+const civicSip = require('civic-sip-api');
 
-import * as civicSip from 'civic-sip-api';
-
-const civicClient = civicSip.newClient({ appId: 'ABC123',
-                                         appSecret: APP_SECRET,
-                                         prvKey: PRV_KEY,
-                                      });
+const civicClient = civicSip.newClient({
+    appId: 'ABC123',
+    appSecret: APP_SECRET,
+    prvKey: PRV_KEY,
+});
 
 civicClient.exchangeCode(jwtToken)
-    .then(function(userData) {
+    .then((userData) => {
         // store user data and userId as appropriate
-        console.log("userData = " + JSON.stringify(userData));
-
-        /*  example for response to a CIVIC_BASIC scope request:
-            userData = {
-                "data": [
-                    {
-                        "label": "contact.verificationLevel.CIVIC_0",
-                        "value": "contact.verificationLevel.CIVIC_0, true",
-                        "isValid": true,
-                        "isOwner": true
-                    },
-                    {
-                        "label": "contact.personal.email",
-                        "value": "user.test@gmail.com",
-                        "isValid": true,
-                        "isOwner": true
-                    },
-                    {
-                        "label": "contact.personal.phoneNumber",
-                        "value": "+1 555-618-7380",
-                        "isValid": true,
-                        "isOwner": true
-                    }
-                ],
-                "encrypted": false,
-                "userId": "36a59d10-6c53-17f6-9185-gthyte22647a"
-            }
-        */
-    }).catch(function(error) {
-
+        console.log('userData = ', JSON.stringify(userData, null, 4));
+    }).catch((error) => {
+        console.log(error);
     });
-
+```
+Example of data returned for a `ScopeRequest` of `BASIC_SIGNUP`
+```javascript
+userData =  {
+    "data": [
+        {
+            "label": "contact.personal.email",
+            "value": "user.test@gmail.com",
+            "isValid": true,
+            "isOwner": true
+        },
+        {
+            "label": "contact.personal.phoneNumber",
+            "value": "+1 5556187380",
+            "isValid": true,
+            "isOwner": true
+        }
+    ],
+    "userId": "c6d5795f8a059ez5ad29a33a60f8b402a172c3e0bbe50fd230ae8e0303609b42"
+}
 ```
 
-
-=======================
-
-Copyright &copy; 2017 Civic.com
+---
+Copyright &copy; 2018 Civic.com
 
 Released under the MIT License, which can be found in the repository in `LICENSE.txt`.
 
