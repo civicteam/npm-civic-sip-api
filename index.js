@@ -1,6 +1,3 @@
-"use strict";
-
-const stringify = require('json-stringify');
 const util = require('util');
 const uritemplate = require('./lib/url-template/url-template');
 const apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
@@ -8,44 +5,42 @@ const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
 
 const sipClientFactory = {};
-
 const JWT_EXPIRATION = '3m';
 
-sipClientFactory.newClient = function (config) {
-
+sipClientFactory.newClient = (config) => {
   const hostedServices = {
     SIPHostedService: {
       base_url: 'https://api.civic.com/sip/',
       hexpub: '049a45998638cfb3c4b211d72030d9ae8329a242db63bfb0076a54e7647370a8ac5708b57af6065805d5a6be72332620932dbb35e8d318fce18e7c980a0eb26aa1',
-      tokenType: 'JWT'
+      tokenType: 'JWT',
     },
-  }
+  };
 
   const apigClient = { };
-  if(config === undefined) {
-      config = {
-          appId: '',
-          appSecret: '',  // hex format
-          prvKey: '',     // hex format
-          env: 'prod',
-          defaultContentType: 'application/json',
-          defaultAcceptType: 'application/json'
-      };
+  if (config === undefined) {
+    config = {
+      appId: '',
+      appSecret: '', // hex format
+      prvKey: '', // hex format
+      env: 'prod',
+      defaultContentType: 'application/json',
+      defaultAcceptType: 'application/json',
+    };
   }
 
-  if(!config.appId) {
-      throw new Error('Please supply your application ID.');
+  if (!config.appId) {
+    throw new Error('Please supply your application ID.');
   }
 
-  if(!config.appSecret) {
+  if (!config.appSecret) {
     throw new Error('Please supply your application secret.');
   }
 
-  if(!config.prvKey) {
+  if (!config.prvKey) {
     throw new Error('Please supply your application private key.');
   }
 
-  if(!config.env) {
+  if (!config.env) {
     config.env = 'prod';
   }
 
@@ -57,40 +52,40 @@ sipClientFactory.newClient = function (config) {
     }
   }
 
-  //If defaultContentType is not defined then default to application/json
-  if(config.defaultContentType === undefined) {
-      config.defaultContentType = 'application/json';
+  // If defaultContentType is not defined then default to application/json
+  if (config.defaultContentType === undefined) {
+    config.defaultContentType = 'application/json';
   }
-  //If defaultAcceptType is not defined then default to application/json
-  if(config.defaultAcceptType === undefined) {
-      config.defaultAcceptType = 'application/json';
+  // If defaultAcceptType is not defined then default to application/json
+  if (config.defaultAcceptType === undefined) {
+    config.defaultAcceptType = 'application/json';
   }
 
   // extract endpoint and path from url
   const invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
-  const endpoint = /(^https?:\/\/[^\/]+)/g.exec(invokeUrl)[1];
+  const endpoint = /(^https?:\/\/[^\/]+)/g.exec(invokeUrl)[1]; // eslint-disable-line no-useless-escape
   const pathComponent = invokeUrl.substring(endpoint.length);
 
   const sigV4ClientConfig = {
-      accessKey: config.accessKey,
-      secretKey: config.secretKey,
-      sessionToken: config.sessionToken,
-      serviceName: 'execute-api',
-      region: config.region,
-      endpoint: endpoint,
-      defaultContentType: config.defaultContentType,
-      defaultAcceptType: config.defaultAcceptType
+    accessKey: config.accessKey,
+    secretKey: config.secretKey,
+    sessionToken: config.sessionToken,
+    serviceName: 'execute-api',
+    region: config.region,
+    endpoint,
+    defaultContentType: config.defaultContentType,
+    defaultAcceptType: config.defaultAcceptType,
   };
 
   let authType = 'NONE';
   if (sigV4ClientConfig.accessKey !== undefined && sigV4ClientConfig.accessKey !== '' && sigV4ClientConfig.secretKey !== undefined && sigV4ClientConfig.secretKey !== '') {
-      authType = 'AWS_IAM';
+    authType = 'AWS_IAM';
   }
 
   const simpleHttpClientConfig = {
-      endpoint: endpoint,
-      defaultContentType: config.defaultContentType,
-      defaultAcceptType: config.defaultAcceptType
+    endpoint,
+    defaultContentType: config.defaultContentType,
+    defaultAcceptType: config.defaultAcceptType,
   };
 
   const apiGatewayClient = apiGateway.core.apiGatewayClientFactory.newClient(simpleHttpClientConfig, sigV4ClientConfig);
@@ -109,13 +104,13 @@ sipClientFactory.newClient = function (config) {
    * @returns {string}
    */
   function makeAuthorizationHeader(targetPath, targetMethod, requestBody) {
-    const jwtToken = jwtjs.createToken(config.appId, hostedServices['SIPHostedService'].base_url, config.appId, JWT_EXPIRATION, {
+    const jwtToken = jwtjs.createToken(config.appId, hostedServices.SIPHostedService.base_url, config.appId, JWT_EXPIRATION, {
       method: targetMethod,
-      path: targetPath
+      path: targetPath,
     }, config.prvKey);
 
     const extension = jwtjs.createCivicExt(requestBody, config.appSecret);
-    return 'Civic' + ' ' + jwtToken + '.' + extension;
+    return `Civic ${jwtToken}.${extension}`;
   }
 
   /**
@@ -128,7 +123,7 @@ sipClientFactory.newClient = function (config) {
    */
   function verifyAndDecrypt(payload) {
     const token = payload.data;
-    const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60, });
+    const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
 
     if (!isValid) {
       throw new Error('JWT Token containing encrypted data could not be verified');
@@ -136,8 +131,8 @@ sipClientFactory.newClient = function (config) {
 
     // decrypt the data
     const decodedToken = jwtjs.decode(token);
-    let userData,
-        clearText = decodedToken.payloadObj.data;
+    let userData;
+    let clearText = decodedToken.payloadObj.data;
 
     if (payload.encrypted) {
       clearText = basicCrypto.decrypt(decodedToken.payloadObj.data, config.appSecret);
@@ -147,12 +142,12 @@ sipClientFactory.newClient = function (config) {
       userData = JSON.parse(clearText);
     } catch (e) {
       /* Ignore */
-      console.log('Error parsing decrypted string to user data: ' + e.message);
+      // console.log(`Error parsing decrypted string to user data: ${e.message}`);
     }
 
     const decryptedPayload = {
-        data: userData,
-        userId: payload.userId,
+      data: userData,
+      userId: payload.userId,
     };
 
     return decryptedPayload;
@@ -164,8 +159,7 @@ sipClientFactory.newClient = function (config) {
    * @param jwtToken containing the authorization code
    *
    */
-
-  async function exchangeCode(jwtToken) {
+  function exchangeCode(jwtToken) {
     const body = { authToken: jwtToken };
     const authHeader = makeAuthorizationHeader('scopeRequest/authCode', 'POST', body);
     const contentLength = Buffer.byteLength(JSON.stringify(body));
@@ -174,55 +168,44 @@ sipClientFactory.newClient = function (config) {
       //   sent with the request, add them here.
       headers: {
         'Content-Length': contentLength,
-        'Accept': '*/*',
-        'Authorization': authHeader,
+        Accept: '*/*',
+        Authorization: authHeader,
       },
       queryParams: {
-      }
+      },
     };
     const params = {};
 
     const scopeRequestAuthCodePostRequest = {
-        verb: 'post'.toUpperCase(),
-        path: pathComponent + uritemplate('/scopeRequest/authCode').expand(apiGateway.core.utils.parseParametersToObject(params, [])),
-        headers: apiGateway.core.utils.parseParametersToObject(params, []),
-        queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
-        body: body
+      verb: 'post'.toUpperCase(),
+      path: pathComponent + uritemplate('/scopeRequest/authCode').expand(apiGateway.core.utils.parseParametersToObject(params, [])),
+      headers: apiGateway.core.utils.parseParametersToObject(params, []),
+      queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
+      body,
     };
-
-    let data, errorObj;
-
-    try {
-      const response = await apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams);
-      // console.log('Civic response: ', JSON.stringify(response, null, 2));
-      if (response.status != 200) {
-        errorObj = new Error('Error exchanging code for data: ' + response.status);
-      } else {
+    return apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams)
+      .then((response) => {
+        // console.log('Civic response: ', JSON.stringify(response, null, 2));
+        if (response.status !== 200) {
+          throw new Error(`Error exchanging code for data: ${response.status}`);
+        }
         return verifyAndDecrypt(response.data);
-      }
-
-    } catch(error) {
-      // console.log('Civic ERROR response: ', util.inspect(error));
-
-      let errorStr;
-      if (typeof error === 'string') {
-        errorStr = error;
-      } else if (error.data && error.data.message) {
-        errorStr = error.data.message;
-      } else if (error.data) {
-        errorStr = error.data;
-      } else {
-        errorStr = util.inspect(error);
-      }
-
-      errorObj = new Error('Error exchanging code for data: ' + errorStr);
-    }
-
-    if (errorObj) {
-      throw errorObj;
-    }
-
-  };
+      })
+      .catch((error) => {
+        // console.log('Civic ERROR response: ', util.inspect(error));
+        let errorStr;
+        if (typeof error === 'string') {
+          errorStr = error;
+        } else if (error.data && error.data.message) {
+          errorStr = error.data.message;
+        } else if (error.data) {
+          errorStr = error.data;
+        } else {
+          errorStr = util.inspect(error);
+        }
+        throw new Error(`Error exchanging code for data: ${errorStr}`);
+      });
+  }
 
   apigClient.exchangeCode = exchangeCode;
 
