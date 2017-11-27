@@ -1,0 +1,14 @@
+{
+    "extends": "airbnb-base",
+    "env": {
+        "mocha": true,
+        "node": true
+    },
+    "rules": {
+        "max-len": ["warn", 200],
+        "import/no-extraneous-dependencies": ["error", {
+            "devDependencies": ["**/test/*.js"]
+        }],
+        "no-plusplus": "warn"
+    }
+}
