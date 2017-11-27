@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "grunt",
-    "test": "mocha --compilers js:babel-core/register",
+    "test": "mocha",
     "watch": "npm run dist -- --watch"
   },
   "homepage": "https://github.com/civicteam/npm-civic-sip-api",
