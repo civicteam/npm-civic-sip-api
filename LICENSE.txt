@@ -1,4 +1,4 @@
-Copyright (c) 2016 civic.com
+Copyright (c) 2018 civic.com
 
 MIT License
 
