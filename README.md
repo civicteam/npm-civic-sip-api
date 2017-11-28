@@ -6,6 +6,8 @@
 
 Node.js wrapper for the Civic hosted SIP API.  For best results, be sure that you're using the latest version.
 
+Please see [docs.civic.com](https://docs.civic.com) for a more details.
+
 ### Installation
 
 `civic-sip-api` can be installed from npm:
