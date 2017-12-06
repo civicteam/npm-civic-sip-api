@@ -1,6 +1,5 @@
 const util = require('util');
-const uritemplate = require('./lib/url-template/url-template');
-const apiGateway = require('./lib/apiGatewayCore/apiGatewayClient');
+const needle = require('needle');
 const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
 
@@ -63,33 +62,6 @@ sipClientFactory.newClient = (config) => {
 
   // extract endpoint and path from url
   const invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
-  const endpoint = /(^https?:\/\/[^\/]+)/g.exec(invokeUrl)[1]; // eslint-disable-line no-useless-escape
-  const pathComponent = invokeUrl.substring(endpoint.length);
-
-  const sigV4ClientConfig = {
-    accessKey: config.accessKey,
-    secretKey: config.secretKey,
-    sessionToken: config.sessionToken,
-    serviceName: 'execute-api',
-    region: config.region,
-    endpoint,
-    defaultContentType: config.defaultContentType,
-    defaultAcceptType: config.defaultAcceptType,
-  };
-
-  let authType = 'NONE';
-  if (sigV4ClientConfig.accessKey !== undefined && sigV4ClientConfig.accessKey !== '' && sigV4ClientConfig.secretKey !== undefined && sigV4ClientConfig.secretKey !== '') {
-    authType = 'AWS_IAM';
-  }
-
-  const simpleHttpClientConfig = {
-    endpoint,
-    defaultContentType: config.defaultContentType,
-    defaultAcceptType: config.defaultAcceptType,
-  };
-
-  const apiGatewayClient = apiGateway.core.apiGatewayClientFactory.newClient(simpleHttpClientConfig, sigV4ClientConfig);
-
   /**
    * Creates the authorization header as an extended Civic JWT Token.
    * The token format: Civic requestToken.extToken
@@ -174,22 +146,13 @@ sipClientFactory.newClient = (config) => {
       queryParams: {
       },
     };
-    const params = {};
 
-    const scopeRequestAuthCodePostRequest = {
-      verb: 'post'.toUpperCase(),
-      path: pathComponent + uritemplate('/scopeRequest/authCode').expand(apiGateway.core.utils.parseParametersToObject(params, [])),
-      headers: apiGateway.core.utils.parseParametersToObject(params, []),
-      queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
-      body,
-    };
-    return apiGatewayClient.makeRequest(scopeRequestAuthCodePostRequest, authType, additionalParams)
+    return needle('POST', `${invokeUrl}/scopeRequest/authCode`, JSON.stringify(body), { headers: additionalParams.headers })
       .then((response) => {
-        // console.log('Civic response: ', JSON.stringify(response, null, 2));
-        if (response.status !== 200) {
-          throw new Error(`Error exchanging code for data: ${response.status}`);
+        if (response.statusCode !== 200) {
+          throw new Error(`${response.statusCode} ${response.body}`);
         }
-        return verifyAndDecrypt(response.data);
+        return verifyAndDecrypt(response.body);
       })
       .catch((error) => {
         // console.log('Civic ERROR response: ', util.inspect(error));
@@ -200,6 +163,8 @@ sipClientFactory.newClient = (config) => {
           errorStr = error.data.message;
         } else if (error.data) {
           errorStr = error.data;
+        } if (error.message) {
+          errorStr = error.message;
         } else {
           errorStr = util.inspect(error);
         }
