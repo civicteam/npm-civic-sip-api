@@ -6,7 +6,7 @@ const jwtjs = require('./lib/jwt');
 const sipClientFactory = {};
 const JWT_EXPIRATION = '3m';
 
-sipClientFactory.newClient = (config) => {
+sipClientFactory.newClient = (configIn) => {
   const hostedServices = {
     SIPHostedService: {
       base_url: 'https://api.civic.com/sip/',
@@ -15,6 +15,7 @@ sipClientFactory.newClient = (config) => {
     },
   };
 
+  let config = Object.assign({}, configIn);
   const apigClient = { };
   if (config === undefined) {
     config = {
