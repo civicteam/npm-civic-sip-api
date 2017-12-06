@@ -56,7 +56,7 @@ userData =  {
 ```
 
 ---
-Copyright &copy; 2018 Civic.com
+Copyright &copy; 2017 Civic.com
 
 Released under the MIT License, which can be found in the repository in `LICENSE.txt`.
 
