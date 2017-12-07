@@ -11,7 +11,7 @@ describe('Civic SIP Server', function test() {
 
   const API = 'https://kw9lj3a57c.execute-api.us-east-1.amazonaws.com/';
   const STAGE = 'dev';
-  const authCode = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5MTI4MTk1ZC0zMDkzLTRmM2MtYjYwNS1iMDU4YjE2Yzg1NWQiLCJpYXQiOjE1MTE3ODUzMTcuMDk5LCJleHAiOjE1MTE3ODcxMTcuMDk5LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiZjkwYjYwNjUtZTBjNi00ZGRkLWIyY2UtODI5ZGEzYjdhNzgyIn19.0f32RalT0o5D7LmZptYGpTVI4sCljrz4KHy_-0gmQf6oXjkf3QOZiQCYU0aNv4r76HCm3vM_RZeyrxKfe8sMaw';
+  const authCode = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0ZTdjMGJmYi0wZTUzLTQ4YmYtYTA1ZS1hZjMwZDNlZmVhOGQiLCJpYXQiOjE1MTI2NDM2MjEuOTY4LCJleHAiOjE1MTI2NDU0MjEuOTY4LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyM2JiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiMmY0NTlkNzYtNGJiNS00ODk1LTg0OTEtNGE1NzM5OGRjNjhiIn19.KJsj265azQiK7gmbRLZCayZILT0_TDhuLzDsTx50Z8O_N6Ox47ohnaQZKQwIkua9T3bFoHrHMzA9e4tCWr-FDw';
 
   const civicClient = civicSip.newClient({
     appId: 'bbb123',
@@ -35,11 +35,9 @@ describe('Civic SIP Server', function test() {
       },
     };
 
-    let url = `${API + STAGE}/scopeRequest/authCode`;
+    const url = `${API}${STAGE}/scopeRequest/authCode`;
 
-    url = 'https://api.civic.com/sip/prod/scopeRequest/authCode';
-
-    needle.post(url, body, options, (err, resp) => {
+    needle.post(url, JSON.stringify(body), options, (err, resp) => {
       if (err) {
         console.log('Error: ', JSON.stringify(err, null, 2));
         doneFn(err);
