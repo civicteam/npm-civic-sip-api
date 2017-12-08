@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Server-side library for the Civic Secure Identity platform.",
   "main": "index.js",
-  "files": [
-    "index.js"
-  ],
   "scripts": {
     "lint": "eslint ./",
     "test": "mocha"
