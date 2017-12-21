@@ -133,8 +133,10 @@ sipClientFactory.newClient = (configIn) => {
    * @param jwtToken containing the authorization code
    *
    */
-  const exchangeCode = (jwtToken) => {
-    const body = { authToken: jwtToken };
+  const exchangeCode = (jwtToken, options = { format: 'legacy' }) => {
+    const { format } = options;
+
+    const body = { authToken: jwtToken, format };
     const authHeader = makeAuthorizationHeader(config, 'scopeRequest/authCode', 'POST', body);
     const contentLength = Buffer.byteLength(JSON.stringify(body));
     const headers = {
@@ -168,8 +170,80 @@ sipClientFactory.newClient = (configIn) => {
       });
   };
 
+  const exchange = (jwtToken) => {
+    const options = { format: 'W3C' };
+    return exchangeCode(jwtToken, options);
+  };
+
+  const verify = (data) => {
+    const payload = {
+      data: basicCrypto.encrypt(data, config.appSecret),
+      encrypted: true,
+    };
+
+    const verifyToken = jwtjs.createToken(config.appId, hostedServices.SIPHostedService.base_url, config.appId, JWT_EXPIRATION, payload, config.prvKey);
+
+    const body = { data: verifyToken };
+    const authHeader = makeAuthorizationHeader(config, 'scopeRequest/verify', 'POST', body);
+    const contentLength = Buffer.byteLength(JSON.stringify(body));
+    const headers = {
+      'Content-Length': contentLength,
+      Accept: '*/*',
+      Authorization: authHeader,
+    };
+
+    return needle('POST', `${invokeUrl}/scopeRequest/verify`, JSON.stringify(body), { headers })
+      .then((response) => {
+        if (response.statusCode !== 200) {
+          throw new Error(`${response.statusCode} ${response.body}`);
+        }
+
+        const token = response.body.data;
+        const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
+
+        if (!isValid) {
+          throw new Error('JWT Token containing encrypted data could not be verified');
+        }
+        // decrypt the data
+        const decodedToken = jwtjs.decode(token);
+        let verified;
+        let clearText = decodedToken.payloadObj.data;
+
+        if (response.body.encrypted) {
+          clearText = basicCrypto.decrypt(decodedToken.payloadObj.data, config.appSecret);
+        }
+
+        try {
+          verified = JSON.parse(clearText);
+        } catch (e) {
+          /* Ignore */
+          console.log(`Error parsing decrypted string to user data: ${e.message}`);
+        }
+        return verified;
+      })
+      .catch((error) => {
+        // console.log('Civic ERROR response: ', util.inspect(error));
+        let errorStr;
+        if (typeof error === 'string') {
+          errorStr = error;
+        } else if (error.data && error.data.message) {
+          errorStr = error.data.message;
+        } else if (error.data) {
+          errorStr = error.data;
+        } if (error.message) {
+          errorStr = error.message;
+        } else {
+          errorStr = util.inspect(error);
+        }
+        throw new Error(`Error verifying data: ${errorStr}`);
+      });
+  };
+
+
   return {
     exchangeCode,
+    verify,
+    exchange,
   };
 };
 
