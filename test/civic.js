@@ -2,19 +2,19 @@ const needle = require('needle');
 const civicSip = require('../index');
 const { assert } = require('chai');
 
-const HEX_PRVKEY_NIST = 'd7b46dd4cf9fac3ec4e6cdba9571db4b1db1edca2656a21b75294f5f95990d7b';
+const HEX_PRVKEY_NIST = 'bf5efd7bdde29dc28443614bfee78c3d6ee39c71e55a0437eee02bf7e3647721';
 // const HEX_PUBKEY_NIST = '047d9fd38a4d370d6cff16bf12723e343090d475bf36c1d806b625615a7873b0919f131e38418b0cd5b8a3e0a253fe3a958c7840bfc6be657af68062fecd7943d1';
-const SECRET = '987e03c36bf94c0ac68d31d4404a565a';
+const SECRET = '44bbae32d1e02bf481074177002bbdef';
 
 describe('Civic SIP Server', function test() {
   this.timeout(10000);
 
   const API = 'https://kw9lj3a57c.execute-api.us-east-1.amazonaws.com/';
   const STAGE = 'dev';
-  const authCode = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0ZTdjMGJmYi0wZTUzLTQ4YmYtYTA1ZS1hZjMwZDNlZmVhOGQiLCJpYXQiOjE1MTI2NDM2MjEuOTY4LCJleHAiOjE1MTI2NDU0MjEuOTY4LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6ImJiYjEyM2JiYjEyMyIsImRhdGEiOnsiY29kZVRva2VuIjoiMmY0NTlkNzYtNGJiNS00ODk1LTg0OTEtNGE1NzM5OGRjNjhiIn19.KJsj265azQiK7gmbRLZCayZILT0_TDhuLzDsTx50Z8O_N6Ox47ohnaQZKQwIkua9T3bFoHrHMzA9e4tCWr-FDw';
+  const authCode = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyZGFiYzk0Ny1hNDRjLTQ1YTgtOWY3Ni1kNmU5MmQyNmQwMmUiLCJpYXQiOjE1MTk4Mzg4NjkuNDQ4LCJleHAiOjE1MTk4NDA2NjkuNDQ4LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6Ikh5aGFXTzFTRyIsImRhdGEiOnsiY29kZVRva2VuIjoiM2Q1ZTgyMjMtNmU3ZC00ODY1LWFiMmUtN2ZjYzAxMjE4ODM2In19.yJImm3UpyRkGBm55SBBA8gJg4uew0Z8Z4H9uD5CKrnPQcn6udxQ0kOtx1TpCtuLuKLhna3yyHAdRq-KuhocnEw';
 
   const civicClient = civicSip.newClient({
-    appId: 'bbb123',
+    appId: 'HyhaWO1SG',
     prvKey: HEX_PRVKEY_NIST,
     appSecret: SECRET,
     api: API,
