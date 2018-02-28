@@ -61,7 +61,7 @@ describe.skip('Encryption and decryption', () => {
 
     const token = jwt.createToken(
       'civic-sip-hosted-service', 'https://api.civic.com/sip/', 'aaa123',
-      '20m', cipherText, HEX_PRVKEY_NIST,
+      '20m', cipherText, HEX_PRVKEY_NIST
     );
 
     const isValid = jwt.verify(token, HEX_PUBKEY_NIST, { gracePeriod: 30 });
@@ -99,7 +99,7 @@ describe.skip('Encryption and decryption', () => {
 
     const token = jwt.createToken(
       'civic-sip-hosted-service', 'https://api.civic.com/sip/', 'aaa123',
-      '20m', cipherText, HEX_PRVKEY_NIST,
+      '20m', cipherText, HEX_PRVKEY_NIST
     );
 
     const isValid = jwt.verify(token, HEX_PUBKEY_NIST, { gracePeriod: 30 });
