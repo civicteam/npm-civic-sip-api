@@ -3,6 +3,7 @@ const civicSip = require('../index');
 const nock = require('nock');
 const sinon = require('sinon');
 const jwtjs = require('../lib/jwt');
+const { assert } = require('chai');
 
 const HEX_PRVKEY_NIST = 'bf5efd7bdde29dc28443614bfee78c3d6ee39c71e55a0437eee02bf7e3647721';
 // const HEX_PUBKEY_NIST = '047d9fd38a4d370d6cff16bf12723e343090d475bf36c1d806b625615a7873b0919f131e38418b0cd5b8a3e0a253fe3a958c7840bfc6be657af68062fecd7943d1';
@@ -61,14 +62,9 @@ describe('Civic SIP Server', function test() {
         'iD-SPGUuIGViCT28gs0j2Nhk3Rz_NkJ7sHGiEov0H2aeBkfdq2kMrg==']);
 
     needle.post(url, JSON.stringify(body), options, (err, resp) => {
-      if (err) {
-        console.log('Error: ', JSON.stringify(err, null, 2));
-        doneFn(err);
-      } else {
-        console.log('statusCode: ', resp.statusCode);
-        console.log('statusMessage: ', resp.statusMessage);
-        doneFn();
-      }
+      assert.equal(resp.statusCode, '401', 'Status code is not 401');
+      assert.equal(resp.body, 'Unauthorized', 'Body should show unauthorized');
+      doneFn();
     });
   });
 
@@ -105,7 +101,9 @@ describe('Civic SIP Server', function test() {
         'ydCSjnp8EPOQ1diNhYs6FfqGn1uRUvPiQoL8S16I_JfWX7s_4qxThQ==']);
 
     civicClient.exchangeCode(authCode).then((data) => {
-      console.log(data);
+      assert.equal(data.data[1].label, 'contact.personal.phoneNumber', 'The labels are not equal');
+      assert.isTrue(data.data[1].isOwner, 'isOwner not true');
+      assert.isTrue(data.data[1].isValid, 'isValid not true');
       jwtjs.verify.restore();
       doneFn();
     })
