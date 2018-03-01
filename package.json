@@ -27,6 +27,7 @@
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
     "mocha": "^2.5.3",
+    "nock": "^9.2.3",
     "sinon": "^4.4.2"
   },
   "dependencies": {
@@ -36,7 +37,6 @@
     "jsrsasign-util": "^1.0.0",
     "lodash.merge": "^4.6.0",
     "needle": "^2.1.0",
-    "nock": "^9.2.3",
     "promise": "^7.1.1",
     "unix-timestamp": "^0.2.0",
     "uuid": "^3.0.1",
