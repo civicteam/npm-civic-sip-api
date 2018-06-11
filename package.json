@@ -5,7 +5,20 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint ./",
-    "test": "mocha"
+    "test": "nyc mocha",
+    "coverage-report": "nyc report -r html mocha"
+  },
+  "nyc": {
+    "check-coverage": true,
+    "per-file": true,
+    "lines": 30,
+    "statements": 30,
+    "functions": 30,
+    "branches": 30,
+    "exclude": [
+      "lib/sjcl.js",
+      "test/*"
+    ]
   },
   "homepage": "https://github.com/civicteam/npm-civic-sip-api",
   "author": {
@@ -28,6 +41,7 @@
     "eslint-plugin-import": "^2.8.0",
     "mocha": "^2.5.3",
     "nock": "^9.2.3",
+    "nyc": "^12.0.2",
     "sinon": "^4.4.2"
   },
   "dependencies": {
