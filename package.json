@@ -11,9 +11,9 @@
   "nyc": {
     "check-coverage": true,
     "per-file": true,
-    "lines": 30,
-    "statements": 30,
-    "functions": 30,
+    "lines": 60,
+    "statements": 60,
+    "functions": 50,
     "branches": 30,
     "exclude": [
       "lib/sjcl.js",
