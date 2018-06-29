@@ -24,7 +24,7 @@ describe('index.js', function test() {
   describe('verifyAndDecrypt', function testVerifyAndDecrypt() {
     const authCode = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxNzc1ZDQwMi05ZjNjLTQ0OWUtYWZkYS04ZDk4MmM0OGIxYjIiLCJpYXQiOjE1MTk5MzE3MTcuMDM1LCJleHAiOjE1MTk5MzM1MTcuMDM1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6Ikh5aGFXTzFTRyIsImRhdGEiOnsiY29kZVRva2VuIjoiYTRhYjE1MDEtZTg0Ni00NmUyLWEwZDktMzEyNTAwNmIxNzUzIn19.1d3Q3QeL8SE_wlyxHPi6Pn-buf8XsxRlCkfhULiI5CbDLCgEjLuVMGIFSUXg6_snXOD9p-ImVml-0yF-A2-qaw';
 
-    it('should decompress the payload', (done) => {
+    it('should decompress the payload if it is compressed', (done) => {
       const compressed = zlib.gzipSync(returnData);
 
       const doneFn = done;
@@ -34,7 +34,7 @@ describe('index.js', function test() {
       nock(`${API}:443`, { encodedQueryParams: true })
         .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode })
         .reply(200, {
-          data: compressed, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted: true, alg: 'aes',
+          data: compressed, compressed: true, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted: true, alg: 'aes',
         }, ['Content-Type',
           'application/json',
           'Content-Length',

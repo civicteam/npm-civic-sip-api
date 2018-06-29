@@ -48,9 +48,9 @@ const makeAuthorizationHeader = (config, targetPath, targetMethod, requestBody) 
  */
 const verifyAndDecrypt = (payload, secret) => {
   let token;
-  try {
+  if (payload.compressed) {
     token = zlib.gunzipSync(Buffer.from(payload.data)).toString();
-  } catch (error) {
+  } else {
     token = payload.data;
   }
   const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
