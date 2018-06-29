@@ -14,7 +14,7 @@
     "lines": 60,
     "statements": 60,
     "functions": 50,
-    "branches": 30,
+    "branches": 25,
     "exclude": [
       "lib/sjcl.js",
       "test/*"
@@ -52,6 +52,7 @@
     "jsrsasign-util": "^1.0.0",
     "lodash.merge": "^4.6.0",
     "needle": "^2.1.0",
+    "object-sizeof": "^1.2.0",
     "promise": "^7.1.1",
     "unix-timestamp": "^0.2.0",
     "uuid": "^3.0.1",

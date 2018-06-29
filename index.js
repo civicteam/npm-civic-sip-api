@@ -2,6 +2,7 @@ const util = require('util');
 const needle = require('needle');
 const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
+const zlib = require('zlib');
 
 const sipClientFactory = {};
 const JWT_EXPIRATION = '3m';
@@ -42,10 +43,17 @@ const makeAuthorizationHeader = (config, targetPath, targetMethod, requestBody) 
  * function verifies the token is valid (signed by Civic sip server etc.)
  * and decrypts the user data if required.
  *
- * @param payload contains data field with JWT token signed by sip-hosted-services
+ * @param tokenPayload contains data field with JWT token signed by sip-hosted-services. Will attempt
+ * to decompress the payload, if it fails will treat it as a standard payload
  */
 const verifyAndDecrypt = (payload, secret) => {
-  const token = payload.data;
+  let token;
+  try {
+    token = zlib.gunzipSync(Buffer.from(payload.data)).toString();
+  } catch (error) {
+    token = payload.data;
+  }
+  console.log(token);
   const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
 
   if (!isValid) {

@@ -41,7 +41,7 @@ function generateToken(prvKeyObj, expStr) {
 }
 
 
-describe.skip('Encryption and decryption', () => {
+describe('Encryption and decryption', () => {
   const userData = '[{ "label": "contact.personal.email", "value": "test@tester.com", "isValid": true, "isOwner": true }, { "label": "contact.personal.phoneNumber", "value": "+1 5553590384", "isValid": true, "isOwner": true }]';
 
   it('should encrypt and decrypt a response using partner secret and AES.', (done) => {
@@ -75,7 +75,7 @@ describe.skip('Encryption and decryption', () => {
     doneFn();
   });
 
-  it('should verify JWT token with encrypted data and decrypt.', (done) => {
+  it.skip('should verify JWT token with encrypted data and decrypt.', (done) => {
     const doneFn = done;
     const payloadData = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMzdmM2UyZS1jYTQ4LTQwMGYtYWY3Zi05YzcxZGNjNjFmNTQiLCJpYXQiOjE0OTYyMTI2MTMuNTQ1LCJleHAiOjE0OTYyMTQ0MTMuNTQ1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6IkhrMng1T0ZlWiIsImRhdGEiOiJiNDRhNTBlZmJkMTk1NGZiNThlZDViMWM1NTBmMGY0NUFtdXQvOUpBemMrRW1pMHpHVmMrVGhtZkkwKzFtSEhQd3RPTkpQNDIvUXV2ZUpWbyt2Y1J6cVpVZnIvNUdOUFUySzlRTDRndXpjT0dKV3BTUnprN08vUys0NE9vdFdlMEdISXBaTjBnU0pROVAzVVpzb2VTM1Iyd2QwVXFhTmtnMWxic09NZFQ2aktvZzVKR0hmSkxabjkxVjhjSURyNGw0RTc2SWVwQ1VmUjRVaVc4Y0Z4RGZSai8vanBkOW1wK0lQcGFjQi9CcU5LTGRoTXRETUpJMk1MN0FQNVRxWW03TndHM2hOWit5dlhINzJjYlFHWXhiYmloVVZHTXVoUjQifQ.7LqXPbUwyscpjYqnevAchatXRcDtiiaymtM54ztMgOU';
 
