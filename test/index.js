@@ -5,8 +5,6 @@ const jwtjs = require('../lib/jwt');
 const { assert } = require('chai');
 const zlib = require('zlib');
 
-const sizeof = require('object-sizeof');
-
 const HEX_PRVKEY_NIST = 'bf5efd7bdde29dc28443614bfee78c3d6ee39c71e55a0437eee02bf7e3647721';
 const SECRET = '44bbae32d1e02bf481074177002bbdef';
 

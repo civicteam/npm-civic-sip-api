@@ -1,6 +1,6 @@
 {
   "name": "civic-sip-api",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "description": "Server-side library for the Civic Secure Identity platform.",
   "main": "index.js",
   "scripts": {
@@ -52,7 +52,6 @@
     "jsrsasign-util": "^1.0.0",
     "lodash.merge": "^4.6.0",
     "needle": "^2.1.0",
-    "object-sizeof": "^1.2.0",
     "promise": "^7.1.1",
     "unix-timestamp": "^0.2.0",
     "uuid": "^3.0.1",
