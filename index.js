@@ -53,7 +53,6 @@ const verifyAndDecrypt = (payload, secret) => {
   } catch (error) {
     token = payload.data;
   }
-  console.log(token);
   const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
 
   if (!isValid) {
