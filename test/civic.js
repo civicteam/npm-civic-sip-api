@@ -41,7 +41,7 @@ describe('Civic SIP Server', function test() {
 
     const url = `${API}/${STAGE}/scopeRequest/authCode`;
 
-    nock(`${API}:443`, { encodedQueryParams: true, compressed: true })
+    nock(`${API}:443`, { encodedQueryParams: true, compressPayloadData: true })
       .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode })
       .reply(401, 'Unauthorized', ['Content-Type',
         'application/json',
@@ -76,7 +76,7 @@ describe('Civic SIP Server', function test() {
     sinon.stub(jwtjs, 'verify').returns(true);
 
     nock(`${API}:443`, { encodedQueryParams: true })
-      .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, compressed: true })
+      .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, compressPayloadData: true })
       .reply(200, {
         data: compressed, compressed: true, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted: true, alg: 'aes',
       }, ['Content-Type',
