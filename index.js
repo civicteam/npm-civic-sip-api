@@ -43,8 +43,7 @@ const makeAuthorizationHeader = (config, targetPath, targetMethod, requestBody) 
  * function verifies the token is valid (signed by Civic sip server etc.)
  * and decrypts the user data if required.
  *
- * @param tokenPayload contains data field with JWT token signed by sip-hosted-services. Will attempt
- * to decompress the payload, if it fails will treat it as a standard payload
+ * @param tokenPayload contains data field with JWT token signed by sip-hosted-services.
  */
 const verifyAndDecrypt = (payload, secret) => {
   let token;
