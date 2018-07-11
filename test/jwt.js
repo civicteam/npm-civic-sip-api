@@ -75,23 +75,23 @@ describe('Encryption and decryption', () => {
     doneFn();
   });
 
-  it.skip('should verify JWT token with encrypted data and decrypt.', (done) => {
-    const doneFn = done;
-    const payloadData = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMzdmM2UyZS1jYTQ4LTQwMGYtYWY3Zi05YzcxZGNjNjFmNTQiLCJpYXQiOjE0OTYyMTI2MTMuNTQ1LCJleHAiOjE0OTYyMTQ0MTMuNTQ1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6IkhrMng1T0ZlWiIsImRhdGEiOiJiNDRhNTBlZmJkMTk1NGZiNThlZDViMWM1NTBmMGY0NUFtdXQvOUpBemMrRW1pMHpHVmMrVGhtZkkwKzFtSEhQd3RPTkpQNDIvUXV2ZUpWbyt2Y1J6cVpVZnIvNUdOUFUySzlRTDRndXpjT0dKV3BTUnprN08vUys0NE9vdFdlMEdISXBaTjBnU0pROVAzVVpzb2VTM1Iyd2QwVXFhTmtnMWxic09NZFQ2aktvZzVKR0hmSkxabjkxVjhjSURyNGw0RTc2SWVwQ1VmUjRVaVc4Y0Z4RGZSai8vanBkOW1wK0lQcGFjQi9CcU5LTGRoTXRETUpJMk1MN0FQNVRxWW03TndHM2hOWit5dlhINzJjYlFHWXhiYmloVVZHTXVoUjQifQ.7LqXPbUwyscpjYqnevAchatXRcDtiiaymtM54ztMgOU';
+  // it('should verify JWT token with encrypted data and decrypt.', (done) => {
+  //   const doneFn = done;
+  //   const payloadData = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMzdmM2UyZS1jYTQ4LTQwMGYtYWY3Zi05YzcxZGNjNjFmNTQiLCJpYXQiOjE0OTYyMTI2MTMuNTQ1LCJleHAiOjE0OTYyMTQ0MTMuNTQ1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6IkhrMng1T0ZlWiIsImRhdGEiOiJiNDRhNTBlZmJkMTk1NGZiNThlZDViMWM1NTBmMGY0NUFtdXQvOUpBemMrRW1pMHpHVmMrVGhtZkkwKzFtSEhQd3RPTkpQNDIvUXV2ZUpWbyt2Y1J6cVpVZnIvNUdOUFUySzlRTDRndXpjT0dKV3BTUnprN08vUys0NE9vdFdlMEdISXBaTjBnU0pROVAzVVpzb2VTM1Iyd2QwVXFhTmtnMWxic09NZFQ2aktvZzVKR0hmSkxabjkxVjhjSURyNGw0RTc2SWVwQ1VmUjRVaVc4Y0Z4RGZSai8vanBkOW1wK0lQcGFjQi9CcU5LTGRoTXRETUpJMk1MN0FQNVRxWW03TndHM2hOWit5dlhINzJjYlFHWXhiYmloVVZHTXVoUjQifQ.7LqXPbUwyscpjYqnevAchatXRcDtiiaymtM54ztMgOU';
 
-    const cipherText = basicCrypto.encrypt(userData, SECRET);
+  //   const cipherText = basicCrypto.encrypt(userData, SECRET);
 
-    const acceptable = { gracePeriod: 24 * 60 * 60 };
-    const isValid = jwt.verify(payloadData, HEX_PUBKEY_NIST, acceptable);
-    // assert(isValid, 'JWT Token containing encrypted data could not be verified.');
+  //   const acceptable = { gracePeriod: 24 * 60 * 60 };
+  //   const isValid = jwt.verify(payloadData, HEX_PUBKEY_NIST, acceptable);
+  //   // assert(isValid, 'JWT Token containing encrypted data could not be verified.');
 
-    // decrypt the data
-    const decodedToken = jwt.decode(payloadData);
-    console.log(decodedToken.payloadObj.data);
-    const clearData = basicCrypto.decrypt(decodedToken.payloadObj.data, 'D37E1D26FA40995F622E1BF4F6552B12');
-    // assert(clearData === userData, 'Decrypted Token data does match original input.');
-    doneFn();
-  });
+  //   // decrypt the data
+  //   const decodedToken = jwt.decode(payloadData);
+  //   console.log(decodedToken.payloadObj.data);
+  //   const clearData = basicCrypto.decrypt(decodedToken.payloadObj.data, 'D37E1D26FA40995F622E1BF4F6552B12');
+  //   // assert(clearData === userData, 'Decrypted Token data does match original input.');
+  //   doneFn();
+  // });
 
   it('test', (done) => {
     const doneFn = done;
