@@ -4,6 +4,7 @@ const nock = require('nock');
 const sinon = require('sinon');
 const jwtjs = require('../lib/jwt');
 const { assert } = require('chai');
+const zlib = require('zlib');
 
 const HEX_PRVKEY_NIST = 'bf5efd7bdde29dc28443614bfee78c3d6ee39c71e55a0437eee02bf7e3647721';
 // const HEX_PUBKEY_NIST = '047d9fd38a4d370d6cff16bf12723e343090d475bf36c1d806b625615a7873b0919f131e38418b0cd5b8a3e0a253fe3a958c7840bfc6be657af68062fecd7943d1';
@@ -40,7 +41,7 @@ describe('Civic SIP Server', function test() {
 
     const url = `${API}/${STAGE}/scopeRequest/authCode`;
 
-    nock(`${API}:443`, { encodedQueryParams: true })
+    nock(`${API}:443`, { encodedQueryParams: true, compressPayloadData: true })
       .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode })
       .reply(401, 'Unauthorized', ['Content-Type',
         'application/json',
@@ -69,14 +70,15 @@ describe('Civic SIP Server', function test() {
   });
 
   it('should exchange authCode for user data.', (done) => {
+    const compressed = zlib.gzipSync(returnData);
     const doneFn = done;
 
     sinon.stub(jwtjs, 'verify').returns(true);
 
     nock(`${API}:443`, { encodedQueryParams: true })
-      .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode })
+      .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, compressPayloadData: true })
       .reply(200, {
-        data: returnData, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted: true, alg: 'aes',
+        data: compressed, compressed: true, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted: true, alg: 'aes',
       }, ['Content-Type',
         'application/json',
         'Content-Length',
