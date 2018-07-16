@@ -1,0 +1,46 @@
+version: 2
+jobs:
+  linting_check:
+    docker:
+      - image: circleci/node:8.9
+    steps:
+      - checkout
+      - restore_cache:
+          key: npm-cache-{{ checksum "package.json" }}    
+      - run:
+          name: Setup lint environment
+          command: npm install
+      - run:
+          name: Lint Test
+          command: npm run lint
+      - save_cache:
+          key: npm-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+    
+  publish-package:
+    docker:
+      - image: circleci/node:8.9
+    steps:
+      - checkout
+      - restore_cache:
+          key: npm-cache-{{ checksum "package.json" }}
+      - run:
+          name: Setup build environment
+          command: npm install
+      - run:
+          name: Testing
+          command: npm run test
+      - save_cache:
+          key: npm-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - linting_check
+      - publish-package:
+          requires:
+            - linting_check
