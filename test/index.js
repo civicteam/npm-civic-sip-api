@@ -138,7 +138,7 @@ describe('Index', function indexTest() {
         });
     });
 
-    it('should not exchange data that is not encrypted', (done) => {
+    it('should handle errors from the authCode end point', (done) => {
       const doneFn = done;
       const client = sipClient.newClient(clientConfig);
       const errorMessage = 'There was an error';
