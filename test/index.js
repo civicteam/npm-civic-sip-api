@@ -38,10 +38,10 @@ function mockAuthCode(authCode, data, encrypted) {
       'ydCSjnp8EPOQ1diNhYs6FfqGn1uRUvPiQoL8S16I_JfWX7s_4qxThQ==']);
 }
 
-function mockAuthCodeThrowErrror(authCode) {
+function mockAuthCodeThrowErrror(authCode, errorMessage) {
   nock(`${API}:443`, { encodedQueryParams: true })
     .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode })
-    .replyWithError('There was an error');
+    .replyWithError(errorMessage);
 }
 
 describe('Index', function indexTest() {
@@ -111,7 +111,6 @@ describe('Index', function indexTest() {
       const doneFn = done;
       const client = sipClient.newClient(clientConfig);
       client.exchangeCode(authCode).then((data) => {
-        // console.log(data);
         assert.equal(data.data[1].label, 'contact.personal.phoneNumber', 'The labels are not equal');
         assert.isTrue(data.data[1].isOwner, 'isOwner not true');
         assert.isTrue(data.data[1].isValid, 'isValid not true');
