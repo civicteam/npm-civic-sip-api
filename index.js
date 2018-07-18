@@ -134,7 +134,7 @@ sipClientFactory.newClient = (configIn) => {
    *
    */
   const exchangeCode = (jwtToken) => {
-    const body = { authToken: jwtToken };
+    const body = { authToken: jwtToken, processPayload: true };
     const authHeader = makeAuthorizationHeader(config, 'scopeRequest/authCode', 'POST', body);
     const contentLength = Buffer.byteLength(JSON.stringify(body));
     const headers = {
@@ -148,6 +148,21 @@ sipClientFactory.newClient = (configIn) => {
         if (response.statusCode !== 200) {
           throw new Error(`${response.statusCode} ${response.body}`);
         }
+
+        const { processed } = response.body;
+
+        if (processed) {
+          return needle('GET', response.body.data)
+            .then((payloadProcessedData) => {
+              const payloadData = payloadProcessedData.body;
+              response.body.data = payloadData;
+              return verifyAndDecrypt(response.body, config.appSecret);
+            })
+            .catch((error) => {
+              throw new Error(`Could not return data from processed payload url: ${error}`);
+            });
+        }
+
         return verifyAndDecrypt(response.body, config.appSecret);
       })
       .catch((error) => {
