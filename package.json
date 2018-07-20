@@ -16,7 +16,6 @@
     "functions": 100,
     "branches": 67,
     "exclude": [
-      "lib/sjcl.js",
       "test/*"
     ]
   },
@@ -55,6 +54,7 @@
     "promise": "^7.1.1",
     "unix-timestamp": "^0.2.0",
     "uuid": "^3.0.1",
-    "xmlhttprequest": "^1.8.0"
+    "xmlhttprequest": "^1.8.0",
+    "sjcl": "civicteam/sjcl.git"
   }
 }
