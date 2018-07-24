@@ -123,6 +123,44 @@ sipClientFactory.newClient = (configIn) => {
     config.defaultAcceptType = 'application/json';
   }
 
+  const processPayload = (response) => {
+    if (response.statusCode !== 200) {
+      throw new Error(`${response.statusCode} ${response.body}`);
+    }
+
+    const { processed } = response.body;
+
+    if (processed) {
+      return needle('GET', response.body.data)
+        .then((data) => {
+          const payloadData = data.body;
+          response.body.data = payloadData;
+          return verifyAndDecrypt(response.body, config.appSecret);
+        })
+        .catch((error) => {
+          throw new Error(`Could not return data from processed payload url: ${error}`);
+        });
+    }
+
+    return verifyAndDecrypt(response.body, config.appSecret);
+  };
+
+  const processPayloadErrorResponse = (error) => {
+    let errorStr;
+    if (typeof error === 'string') {
+      errorStr = error;
+    } else if (error.data && error.data.message) {
+      errorStr = error.data.message;
+    } else if (error.data) {
+      errorStr = error.data;
+    } if (error.message) {
+      errorStr = error.message;
+    } else {
+      errorStr = util.inspect(error);
+    }
+    throw new Error(`Error exchanging code for data: ${errorStr}`);
+  };
+
   // extract endpoint and path from url
   const invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
 
@@ -133,6 +171,7 @@ sipClientFactory.newClient = (configIn) => {
    * @param jwtToken containing the authorization code
    *
    */
+
   const exchangeCode = (jwtToken) => {
     const body = { authToken: jwtToken, processPayload: true };
     const authHeader = makeAuthorizationHeader(config, 'scopeRequest/authCode', 'POST', body);
@@ -141,50 +180,17 @@ sipClientFactory.newClient = (configIn) => {
       'Content-Length': contentLength,
       Accept: '*/*',
       Authorization: authHeader,
+      'Content-Type': 'application/json',
     };
 
     return needle('POST', `${invokeUrl}/scopeRequest/authCode`, JSON.stringify(body), { headers })
-      .then((response) => {
-        if (response.statusCode !== 200) {
-          throw new Error(`${response.statusCode} ${response.body}`);
-        }
-
-        const { processed } = response.body;
-
-        if (processed) {
-          return needle('GET', response.body.data)
-            .then((payloadProcessedData) => {
-              const payloadData = payloadProcessedData.body;
-              response.body.data = payloadData;
-              return verifyAndDecrypt(response.body, config.appSecret);
-            })
-            .catch((error) => {
-              throw new Error(`Could not return data from processed payload url: ${error}`);
-            });
-        }
-
-        return verifyAndDecrypt(response.body, config.appSecret);
-      })
-      .catch((error) => {
-        // console.log('Civic ERROR response: ', util.inspect(error));
-        let errorStr;
-        if (typeof error === 'string') {
-          errorStr = error;
-        } else if (error.data && error.data.message) {
-          errorStr = error.data.message;
-        } else if (error.data) {
-          errorStr = error.data;
-        } if (error.message) {
-          errorStr = error.message;
-        } else {
-          errorStr = util.inspect(error);
-        }
-        throw new Error(`Error exchanging code for data: ${errorStr}`);
-      });
+      .then(processPayload)
+      .catch(processPayloadErrorResponse);
   };
 
   return {
     exchangeCode,
+    processPayload,
   };
 };
 

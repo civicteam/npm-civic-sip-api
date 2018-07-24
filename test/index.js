@@ -11,7 +11,7 @@ const STAGE = 'dev';
 
 function mockAuthCode(authCode, data, encrypted) {
   nock(`${API}:443`, { encodedQueryParams: true })
-    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode })
+    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, processPayload: true })
     .reply(200, {
       data, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted, alg: 'aes',
     }, ['Content-Type',
@@ -40,7 +40,7 @@ function mockAuthCode(authCode, data, encrypted) {
 
 function mockAuthCodeThrowErrror(authCode, errorMessage) {
   nock(`${API}:443`, { encodedQueryParams: true })
-    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode })
+    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, processPayload: true })
     .replyWithError(errorMessage);
 }
 
@@ -64,10 +64,10 @@ describe('Index', function indexTest() {
   describe('newClient', function newClientTest() {
     this.beforeEach(() => {
       sinon.stub(jwtjs, 'verify').returns(true);
-  
+
       mockAuthCode(authCode, returnData, true);
     });
-  
+
     this.afterEach(() => {
       nock.cleanAll();
       jwtjs.verify.restore();
