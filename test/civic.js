@@ -24,7 +24,6 @@ describe('Civic SIP Server', function test() {
   const STAGE = 'dev';
   const authCode = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxNzc1ZDQwMi05ZjNjLTQ0OWUtYWZkYS04ZDk4MmM0OGIxYjIiLCJpYXQiOjE1MTk5MzE3MTcuMDM1LCJleHAiOjE1MTk5MzM1MTcuMDM1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6Ikh5aGFXTzFTRyIsImRhdGEiOnsiY29kZVRva2VuIjoiYTRhYjE1MDEtZTg0Ni00NmUyLWEwZDktMzEyNTAwNmIxNzUzIn19.1d3Q3QeL8SE_wlyxHPi6Pn-buf8XsxRlCkfhULiI5CbDLCgEjLuVMGIFSUXg6_snXOD9p-ImVml-0yF-A2-qaw';
   const returnData = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1OTYzNWQ2Yy0zYzUyLTQwMzktOTg2OS05MWQwMjUzN2M2YjIiLCJpYXQiOjE1MTk5MzI1NzIuMTU4LCJleHAiOjE1MTk5MzQzNzIuMTU4LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6Ikh5aGFXTzFTRyIsImRhdGEiOiI0MDNkNjI0MzY1OTYwMjIyYmQzMWE2MWNhMjQzNWYyY1dOWjhrWkNEUWZWQmtSSVdsbDkzNGhZbDRUTGlrWWVENU52WE0xTUowN2FVQzFtcnFmdVdoWk5qQWVKT1plS0M2emk5Umh3cWR0bkswdWxNRFAwTkRaTHBRa2JqaVdBb1c5RXFYQW41eHNyemZSNUZ0cXZqZ0NORzNvUkp0Y29tRVBvaGVWMDZ3NWZDQ0Z1TjQrbTNiSW5CNldMamNBSmVObUJZT2oyWjFFQVoxcHZ0R2RwSThMWTVYS2VFTHpKM3MzZndidEpXbkorSHFqakxsQjJPM0lmaDBRdVdUMldUNWVrc3RLN1F1bk5MSldiSzJqWkkveGc0RHJFWFl0dnEifQ.YBBljiXaqrbiftAhu6X6csDVbRLcsSNf3xZNRgQzj6Wd7v1Ilja55H_K_gO7zFzj3Qi-bc7-83SI1w6A4Y7MEA';
-  const processPayloadData = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwNmUwNjZkYi01NWZhLTRlN2EtYmJjNi1mMmUxMTE5YWQ1YWUiLCJpYXQiOjE1MzI0NDAzMDUuNTA3LCJleHAiOjE1MzI0NDIxMDUuNTA3LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6IldHS1pTa3BNWSIsImRhdGEiOiJiMWNlODA5OGM0NmM3NDFjYmQxMjA4YzEzZDNjMDYzN1h6ZTJxZzlYNC90dUMvd1VNNmpNWmRPR1lDaWQ4c25sU1Qwd0JId0dhNHpxU0hwU3J0V3ZNY1VBd3ZTVWVkeGg2aFYycHduRm80UU5qTzBockcxWjRyaFpKVGVINDJTZnVMZFRTc3VqbERxMGJMdmp6QldZWkVVNWkxdHpHQXh1ek53WVJDN092UnhBR3ZXand3VW8zVGJjNEpYdEl0UUZMWElzUDFBK1l2cXF1M3R6akRjc1lFNjkwZnVVSzU5Y2QvVkxSVzY1OU9GaFFpUGlFbjJrdUx2T2RkZ3JhZGVaWTZUN2o5Vlk4Rm5NZmZrTmxpODV4YkViWmUxbm1ZWVkifQ.gsrQjn3yOGQj1unbvkmNVZJ_AQ2E4EPjI-Uw0h2K9IEilwYGMSelbJqDaNBncXveXM9z8AS6XjXdIs9kd0prvw';
   const civicClient = civicSip.newClient({
     appId: 'HyhaWO1SG',
     prvKey: HEX_PRVKEY_NIST,
@@ -137,8 +136,9 @@ describe('Civic SIP Server', function test() {
   it('should process payload via payload service', (done) => {
     let payloadData;
     const userId = '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991';
+    sinon.stub(jwtjs, 'verify').returns(true);
 
-    needle('POST', PAYLOAD_PROCESS_API, JSON.stringify({ payload: processPayloadData }))
+    needle('POST', PAYLOAD_PROCESS_API, JSON.stringify({ payload: returnData }))
       .then((data) => {
         data.body.payloadUrl.should.exist
         data.statusCode = 200
@@ -152,6 +152,7 @@ describe('Civic SIP Server', function test() {
           .then((d) => {
             expect(d).to.haveOwnProperty('data')
             expect(d).to.haveOwnProperty('userId')
+            jwtjs.verify.restore();
           })
           .should.notify(done)
       })
