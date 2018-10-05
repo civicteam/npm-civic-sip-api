@@ -170,21 +170,6 @@ describe('Civic SIP Server', function test() {
 
     const processPayload = civicClient.processPayload(response);
     processPayload.should.be.rejected.and.notify(done)
-  })
-
-  /*
-  it.only('should exchange authCode for user data in async fashion.', async function(done) {
-    const doneFn = done;
-
-    try {
-      const data = await civicClient.exchangeCode(authCode);
-      console.log('response.data: ', JSON.stringify(data, null, 2));
-      doneFn();
-    } catch(error) {
-      console.error(error.message);
-    }
-
   });
-  */
 });
 
