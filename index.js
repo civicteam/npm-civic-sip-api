@@ -168,11 +168,13 @@ sipClientFactory.newClient = (configIn) => {
    * Exchange authorization code in the form of a JWT Token for the user data
    * requested in the scope request.
    *
-   * @param jwtToken containing the authorization code
+   * @param {String} jwtToken - Containing the authorization code
+   * @param {Object} options - Optional requirements like a proxy address
+   * @returns {Object} The decrypted user data payload
    *
    */
 
-  const exchangeCode = (jwtToken) => {
+  const exchangeCode = (jwtToken, options = {}) => {
     const body = { authToken: jwtToken, processPayload: true };
     const authHeader = makeAuthorizationHeader(config, 'scopeRequest/authCode', 'POST', body);
     const contentLength = Buffer.byteLength(JSON.stringify(body));
@@ -182,8 +184,14 @@ sipClientFactory.newClient = (configIn) => {
       Authorization: authHeader,
       'Content-Type': 'application/json',
     };
+    const requestOptions = { headers };
+    const proxy = options.connection && options.connection.proxy ? options.connection.proxy : null;
 
-    return needle('POST', `${invokeUrl}/scopeRequest/authCode`, JSON.stringify(body), { headers })
+    if (proxy) {
+      requestOptions.proxy = proxy;
+    }
+
+    return needle('POST', `${invokeUrl}/scopeRequest/authCode`, JSON.stringify(body), requestOptions)
       .then(processPayload)
       .catch(processPayloadErrorResponse);
   };
