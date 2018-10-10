@@ -34,6 +34,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "chai-as-promised": "^7.1.1",
     "chai": "^3.5.0",
     "eslint": "^4.12.0",
     "eslint-config-airbnb-base": "^12.1.0",
@@ -45,7 +46,6 @@
     "sinon": "^4.4.2"
   },
   "dependencies": {
-    "chai-as-promised": "^7.1.1",
     "crypto-js": "^3.1.9-1",
     "json-stable-stringify": "^1.0.1",
     "jsrsasign": "^7.1.5",
