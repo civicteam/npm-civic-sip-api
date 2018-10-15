@@ -169,12 +169,11 @@ sipClientFactory.newClient = (configIn) => {
    * requested in the scope request.
    *
    * @param {String} jwtToken - Containing the authorization code
-   * @param {Object} options - Optional requirements like a proxy address
    * @returns {Object} The decrypted user data payload
    *
    */
 
-  const exchangeCode = (jwtToken, options = {}) => {
+  const exchangeCode = (jwtToken) => {
     const body = { authToken: jwtToken, processPayload: true };
     const authHeader = makeAuthorizationHeader(config, 'scopeRequest/authCode', 'POST', body);
     const contentLength = Buffer.byteLength(JSON.stringify(body));
@@ -185,10 +184,9 @@ sipClientFactory.newClient = (configIn) => {
       'Content-Type': 'application/json',
     };
     const requestOptions = { headers };
-    const proxy = options.connection && options.connection.proxy ? options.connection.proxy : null;
 
-    if (proxy) {
-      requestOptions.proxy = proxy;
+    if (config.proxy) {
+      requestOptions.proxy = config.proxy;
     }
 
     return needle('POST', `${invokeUrl}/scopeRequest/authCode`, JSON.stringify(body), requestOptions)
