@@ -1,6 +1,7 @@
 const util = require('util');
 const needle = require('needle');
 const request = require('request-promise-native');
+const fs = require('fs');
 const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
 
@@ -205,8 +206,8 @@ sipClientFactory.newClient = (configIn) => {
     };
 
     if (config.proxy) {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-      requestOptions.proxy = config.proxy;
+      requestOptions.proxy = config.proxy.url;
+      requestOptions.rejectUnauthorized = false;
     }
 
     return request(requestOptions)
