@@ -53,9 +53,11 @@
     "lodash.merge": "^4.6.0",
     "needle": "^2.1.0",
     "promise": "^7.1.1",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
+    "sjcl": "civicteam/sjcl.git",
     "unix-timestamp": "^0.2.0",
     "uuid": "^3.0.1",
-    "xmlhttprequest": "^1.8.0",
-    "sjcl": "civicteam/sjcl.git"
+    "xmlhttprequest": "^1.8.0"
   }
 }

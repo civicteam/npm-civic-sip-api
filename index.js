@@ -1,5 +1,6 @@
 const util = require('util');
 const needle = require('needle');
+const request = require('request-promise-native');
 const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
 
@@ -128,21 +129,33 @@ sipClientFactory.newClient = (configIn) => {
       throw new Error(`${response.statusCode} ${response.body}`);
     }
 
-    const { processed } = response.body;
+    let body;
+
+    try {
+      body = JSON.parse(response.body);
+    } catch (error) {
+      ({ body } = response);
+    }
+
+    if (!body || !body.data) {
+      return body;
+    }
+
+    const { processed } = body;
 
     if (processed) {
-      return needle('GET', response.body.data)
+      return needle('GET', body.data)
         .then((data) => {
           const payloadData = data.body;
-          response.body.data = payloadData;
-          return verifyAndDecrypt(response.body, config.appSecret);
+          body.data = payloadData;
+          return verifyAndDecrypt(body, config.appSecret);
         })
         .catch((error) => {
           throw new Error(`Could not return data from processed payload url: ${error}`);
         });
     }
 
-    return verifyAndDecrypt(response.body, config.appSecret);
+    return verifyAndDecrypt(body, config.appSecret);
   };
 
   const processPayloadErrorResponse = (error) => {
@@ -183,13 +196,20 @@ sipClientFactory.newClient = (configIn) => {
       Authorization: authHeader,
       'Content-Type': 'application/json',
     };
-    const requestOptions = { headers };
+    const requestOptions = {
+      headers,
+      body: JSON.stringify(body),
+      url: `${invokeUrl}/scopeRequest/authCode`,
+      method: 'POST',
+      resolveWithFullResponse: true,
+    };
 
     if (config.proxy) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
       requestOptions.proxy = config.proxy;
     }
 
-    return needle('POST', `${invokeUrl}/scopeRequest/authCode`, JSON.stringify(body), requestOptions)
+    return request(requestOptions)
       .then(processPayload)
       .catch(processPayloadErrorResponse);
   };
