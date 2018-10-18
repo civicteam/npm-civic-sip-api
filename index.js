@@ -1,7 +1,6 @@
 const util = require('util');
 const needle = require('needle');
 const request = require('request-promise-native');
-const fs = require('fs');
 const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
 
