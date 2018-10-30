@@ -1,8 +1,10 @@
+const _ = require('lodash');
 const sipClient = require('../index');
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 const nock = require('nock');
 const jwtjs = require('../lib/jwt');
+const request = require('request-promise-native');
 
 const HEX_PRVKEY_NIST = 'bf5efd7bdde29dc28443614bfee78c3d6ee39c71e55a0437eee02bf7e3647721';
 const SECRET = '44bbae32d1e02bf481074177002bbdef';
@@ -64,7 +66,6 @@ describe('Index', function indexTest() {
   describe('newClient', function newClientTest() {
     this.beforeEach(() => {
       sinon.stub(jwtjs, 'verify').returns(true);
-
       mockAuthCode(authCode, returnData, true);
     });
 
@@ -152,6 +153,24 @@ describe('Index', function indexTest() {
         .catch((error) => {
           expect(error.message).to.equal(`Error exchanging code for data: Error: ${errorMessage}`);
           doneFn();
+        });
+    });
+
+    it('should exchange an encrypted code using a proxy', (done) => {
+      const doneFn = done;
+      const clientConfigCopy = _.cloneDeep(clientConfig);
+      clientConfigCopy.proxy = {
+        url: 'http://localhost:8080',
+      };
+      const client = sipClient.newClient(clientConfigCopy);
+      client.exchangeCode(authCode).then((data) => {
+        assert.equal(data.data[1].label, 'contact.personal.phoneNumber', 'The labels are not equal');
+        assert.isTrue(data.data[1].isOwner, 'isOwner not true');
+        assert.isTrue(data.data[1].isValid, 'isValid not true');
+        doneFn();
+      })
+        .catch((error) => {
+          doneFn(error);
         });
     });
   });
