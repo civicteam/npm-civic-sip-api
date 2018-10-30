@@ -185,7 +185,6 @@ sipClientFactory.newClient = (configIn) => {
    * @returns {Object} The decrypted user data payload
    *
    */
-
   const exchangeCode = (jwtToken) => {
     const body = { authToken: jwtToken, processPayload: true };
     const authHeader = makeAuthorizationHeader(config, 'scopeRequest/authCode', 'POST', body);
