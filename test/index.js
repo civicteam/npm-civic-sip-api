@@ -150,7 +150,7 @@ describe('Index', function indexTest() {
         doneFn();
       })
         .catch((error) => {
-          expect(error.message).to.equal(`Error exchanging code for data: ${errorMessage}`);
+          expect(error.message).to.equal(`Error exchanging code for data: Error: ${errorMessage}`);
           doneFn();
         });
     });
