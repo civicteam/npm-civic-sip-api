@@ -138,7 +138,7 @@ sipClientFactory.newClient = (configIn) => {
     }
 
     if (!body || !body.data) {
-      throw new Error(`Invalid response body or body data not found: ${body}`);
+      throw new Error(`Invalid response body or body data not found: ${JSON.stringify(body)}`);
     }
 
     const { processed } = body;

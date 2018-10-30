@@ -159,7 +159,7 @@ describe('Civic SIP Server', function test() {
       .catch(error => { throw new Error(error)})
   });
 
-  it('should throw error when attempting to process a empty payload', (done) => {
+  it('should throw error when attempting to process an empty payload', () => {
     const response = {
       body: {
         processed: true,
@@ -168,8 +168,12 @@ describe('Civic SIP Server', function test() {
       statusCode: 200,
     }
 
-    const processPayload = civicClient.processPayload(response);
-    processPayload.should.be.rejected.and.notify(done)
+    try {
+      const processPayload = civicClient.processPayload(response);
+      expect(processPayload).to.be.undefined();
+    } catch (error) {
+     expect(error.message).to.equal('Invalid response body or body data not found: {"processed":true,"data":""}');
+    }
   });
 });
 
