@@ -4,12 +4,55 @@ const sinon = require('sinon');
 const { expect, assert } = require('chai');
 const nock = require('nock');
 const jwtjs = require('../lib/jwt');
-const request = require('request-promise-native');
+const rewire = require('rewire');
+const civicIndex = rewire("../index.js");
+const needle = require('needle');
 
 const HEX_PRVKEY_NIST = 'bf5efd7bdde29dc28443614bfee78c3d6ee39c71e55a0437eee02bf7e3647721';
 const SECRET = '44bbae32d1e02bf481074177002bbdef';
 const API = 'https://kw9lj3a57c.execute-api.us-east-1.amazonaws.com';
 const STAGE = 'dev';
+const bucketResponse = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1OTYzNWQ2Yy0zYzUyLTQwMzktOTg2OS05MWQwMjUz' +
+'N2M2YjIiLCJpYXQiOjE1MTk5MzI1NzIuMTU4LCJleHAiOjE1MTk5MzQzNzIuMTU4LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhd' +
+'WQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6Ikh5aGFXTzFTRyIsImRhdGEiOiI0MDNkNjI0MzY1OTYwMjIyYmQzMWE2MWNhMj' +
+'QzNWYyY1dOWjhrWkNEUWZWQmtSSVdsbDkzNGhZbDRUTGlrWWVENU52WE0xTUowN2FVQzFtcnFmdVdoWk5qQWVKT1plS0M2emk5Umh3cWR0bkswdWx' +
+'NRFAwTkRaTHBRa2JqaVdBb1c5RXFYQW41eHNyemZSNUZ0cXZqZ0NORzNvUkp0Y29tRVBvaGVWMDZ3NWZDQ0Z1TjQrbTNiSW5CNldMamNBSmVObUJZ' +
+'T2oyWjFFQVoxcHZ0R2RwSThMWTVYS2VFTHpKM3MzZndidEpXbkorSHFqakxsQjJPM0lmaDBRdVdUMldUNWVrc3RLN1F1bk5MSldiSzJqWkkveGc0R' +
+'HJFWFl0dnEifQ.YBBljiXaqrbiftAhu6X6csDVbRLcsSNf3xZNRgQzj6Wd7v1Ilja55H_K_gO7zFzj3Qi-bc7-83SI1w6A4Y7MEA';
+
+function mockProcessPayload() {
+  nock('https://dev-civic-payload-service-payload-bucket.s3.amazonaws.com:443', { encodedQueryParams:true })
+    .get('/3b888d7060fa95d73713b9b06ade240ffaa7da7b')
+    .query({"X-Amz-Algorithm":"AWS4-HMAC-SHA256",
+      "X-Amz-Credential":"ASIATUH3F2PWIHP3OU7P%2F20181031%2Fus-east-1%2Fs3%2Faws4_request",
+      "X-Amz-Date":"20181031T203333Z",
+      "X-Amz-Expires":"60",
+      "X-Amz-Security-Token":"FQoGZXIvYXdzEK3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDK0P439WGK3oLZwEHyKBAnOKqZd7ME%2Fpnsj5WszkFPCZnoDtP2OPctdZPvfNp%2BjG7xPTh%2FW25QHuvOEHirIzp0uuWyZxjNC3EfZW7hb1gFJcX0cM2tfPXqXv9XVGSfmW%2F%2Ffp%2F2ZlOxv7RfaKgHaw3SX4yEPwGeFLdoXrfSsI6vLLh2LtvrLg3TBgGTYP2YxuJ8s1SADcuUIw8VqE%2B9%2Bukzy7UG9fJ2fhTXEQZdw4k7D%2FwcDbRowbSJT3ODHSRlopS0siIdJ2WbAC%2BsGFK%2BztLadax1oAMAUOOtR75CV42%2FiU0PMPnIKtwDJ%2F6hebpMgPJBQokiQrgdm%2FPpr6oKd%2BCem89Hp2qJz3MZ024ckll55vKNSJ6N4F","X-Amz-Signature":"ab6956bbeac0c52e18d9e0eb7f950731ff9ec525b090aeb89648711d18d2b352","X-Amz-SignedHeaders":"host"})
+    .reply(200, bucketResponse, [
+      'x-amz-id-2',
+      'EBxdrc5mIa0/kIigJKikjiNsb5Ws872mBF2j1ZF2BYmjJmDLbfUXRm+ECD1eGpaJsOvLcY98UNY=',
+      'x-amz-request-id',
+      '86A2C7DB3845BDB7',
+      'Date',
+      'Wed, 31 Oct 2018 20:33:34 GMT',
+      'Last-Modified',
+      'Wed, 31 Oct 2018 20:33:34 GMT',
+      'x-amz-expiration',
+      'expiry-date="Fri, 02 Nov 2018 00:00:00 GMT", rule-id="NDg4OWRlYWItMmU2NC00Yzc0LTgyYjktMGUyNjk3YjZlOTQ0"',
+      'ETag',
+      '"8e8a7171740edbc62f3b94149411b61e"',
+      'Accept-Ranges',
+      'bytes',
+      'Content-Type',
+      'application/json',
+      'Content-Length',
+      '754',
+      'Server',
+      'AmazonS3',
+      'Connection',
+      'close',
+    ]);
+}
 
 function mockAuthCode(authCode, data, encrypted) {
   nock(`${API}:443`, { encodedQueryParams: true })
@@ -67,6 +110,7 @@ describe('Index', function indexTest() {
     this.beforeEach(() => {
       sinon.stub(jwtjs, 'verify').returns(true);
       mockAuthCode(authCode, returnData, true);
+      mockProcessPayload();
     });
 
     this.afterEach(() => {
@@ -172,6 +216,52 @@ describe('Index', function indexTest() {
         .catch((error) => {
           doneFn(error);
         });
+    });
+
+    it('should throw an error if verify fails', () => {
+      jwtjs.verify.restore();
+      sinon.stub(jwtjs, 'verify').returns(false);
+      const verifyAndDecrypt = civicIndex.__get__('verifyAndDecrypt');
+
+      try {
+        verifyAndDecrypt({}, 'asecret');
+      } catch (error) {
+        assert.equal(error.message, 'JWT Token containing encrypted data could not be verified');
+      }
+    });
+
+    it('should process all the payload error types', () => {
+      const processError = civicIndex.__get__('processPayloadErrorResponse');
+
+      try {
+        processError({ data: 'an error' });
+      } catch (error) {
+        assert.equal(error.message, 'Error exchanging code for data: an error');
+      }
+
+      try {
+        processError({ message: 'an error' });
+      } catch (error) {
+        assert.equal(error.message, 'Error exchanging code for data: an error');
+      }
+
+      try {
+        processError({ data: { message: 'an error' }});
+      } catch (error) {
+        assert.equal(error.message, 'Error exchanging code for data: an error');
+      }
+
+      try {
+        processError('an error');
+      } catch (error) {
+        assert.equal(error.message, 'Error exchanging code for data: an error');
+      }
+
+      try {
+        processError(['an error']);
+      } catch (error) {
+        assert.equal(error.message, 'Error exchanging code for data: [ \'an error\' ]');
+      }
     });
   });
 });
