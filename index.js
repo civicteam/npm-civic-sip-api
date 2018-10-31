@@ -77,6 +77,22 @@ const verifyAndDecrypt = (payload, secret) => {
   return decryptedPayload;
 };
 
+const processPayloadErrorResponse = (error) => {
+  let errorStr;
+  if (typeof error === 'string') {
+    errorStr = error;
+  } else if (error.data && error.data.message) {
+    errorStr = error.data.message;
+  } else if (error.data) {
+    errorStr = error.data;
+  } else if (error.message) {
+    errorStr = error.message;
+  } else {
+    errorStr = util.inspect(error);
+  }
+  throw new Error(`Error exchanging code for data: ${errorStr}`);
+};
+
 // todo convert to class
 sipClientFactory.newClient = (configIn) => {
   let config = Object.assign({}, configIn);
@@ -144,34 +160,27 @@ sipClientFactory.newClient = (configIn) => {
     const { processed } = body;
 
     if (processed) {
-      return needle('GET', body.data)
+      return new Promise((resolve, reject) => {
+        needle.get(body.data, (error, needleResponse) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(needleResponse);
+          }
+        });
+      })
         .then((data) => {
           const payloadData = data.body;
           body.data = payloadData;
           return verifyAndDecrypt(body, config.appSecret);
         })
         .catch((error) => {
+          console.log(error);
           throw new Error(`Could not return data from processed payload url: ${error}`);
         });
     }
 
     return verifyAndDecrypt(body, config.appSecret);
-  };
-
-  const processPayloadErrorResponse = (error) => {
-    let errorStr;
-    if (typeof error === 'string') {
-      errorStr = error;
-    } else if (error.data && error.data.message) {
-      errorStr = error.data.message;
-    } else if (error.data) {
-      errorStr = error.data;
-    } if (error.message) {
-      errorStr = error.message;
-    } else {
-      errorStr = util.inspect(error);
-    }
-    throw new Error(`Error exchanging code for data: ${errorStr}`);
   };
 
   // extract endpoint and path from url
