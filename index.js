@@ -175,7 +175,6 @@ sipClientFactory.newClient = (configIn) => {
           return verifyAndDecrypt(body, config.appSecret);
         })
         .catch((error) => {
-          console.log(error);
           throw new Error(`Could not return data from processed payload url: ${error}`);
         });
     }
