@@ -1,5 +1,4 @@
 const util = require('util');
-const needle = require('needle');
 const request = require('request-promise-native');
 const basicCrypto = require('./lib/basicCrypto');
 const jwtjs = require('./lib/jwt');
@@ -160,15 +159,18 @@ sipClientFactory.newClient = (configIn) => {
     const { processed } = body;
 
     if (processed) {
-      return new Promise((resolve, reject) => {
-        needle.get(body.data, (error, needleResponse) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(needleResponse);
-          }
-        });
-      })
+      const requestOptions = {
+        url: body.data,
+        method: 'GET',
+        resolveWithFullResponse: true,
+      };
+
+      if (config.proxy) {
+        requestOptions.proxy = config.proxy.url;
+        requestOptions.rejectUnauthorized = false;
+      }
+
+      return request(requestOptions)
         .then((data) => {
           const payloadData = data.body;
           body.data = payloadData;

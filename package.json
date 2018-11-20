@@ -1,6 +1,6 @@
 {
   "name": "civic-sip-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Server-side library for the Civic Secure Identity platform.",
   "main": "index.js",
   "scripts": {
