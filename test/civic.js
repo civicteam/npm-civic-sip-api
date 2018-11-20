@@ -8,9 +8,9 @@ const chaiAsPromised = require('chai-as-promised')
 
 chai.use(chaiAsPromised);
 
-const expect = chai.expect
-const assert = chai.assert
-const should = chai.should()
+const expect = chai.expect;
+const assert = chai.assert;
+const should = chai.should();
 
 const HEX_PRVKEY_NIST = 'bf5efd7bdde29dc28443614bfee78c3d6ee39c71e55a0437eee02bf7e3647721';
 // const HEX_PUBKEY_NIST = '047d9fd38a4d370d6cff16bf12723e343090d475bf36c1d806b625615a7873b0919f131e38418b0cd5b8a3e0a253fe3a958c7840bfc6be657af68062fecd7943d1';
@@ -150,13 +150,13 @@ describe('Civic SIP Server', function test() {
         const processPayload = civicClient.processPayload(payloadData);
         processPayload.should.be.fulfilled
           .then((d) => {
-            expect(d).to.haveOwnProperty('data')
-            expect(d).to.haveOwnProperty('userId')
+            expect(d).to.haveOwnProperty('data');
+            expect(d).to.haveOwnProperty('userId');
             jwtjs.verify.restore();
           })
-          .should.notify(done)
+          .should.notify(done);
       })
-      .catch(error => { throw new Error(error)})
+      .catch(error => { throw new Error(error)});
   });
 
   it('should throw error when attempting to process an empty payload', () => {
