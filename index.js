@@ -167,7 +167,7 @@ sipClientFactory.newClient = (configIn) => {
 
       if (config.proxy) {
         requestOptions.proxy = config.proxy.url;
-        requestOptions.rejectUnauthorized = false;
+        requestOptions.rejectUnauthorized = 'rejectUnauthorized' in config.proxy ? config.proxy.rejectUnauthorized : true;
       }
 
       return request(requestOptions)
@@ -215,7 +215,7 @@ sipClientFactory.newClient = (configIn) => {
 
     if (config.proxy) {
       requestOptions.proxy = config.proxy.url;
-      requestOptions.rejectUnauthorized = false;
+      requestOptions.rejectUnauthorized = 'rejectUnauthorized' in config.proxy ? config.proxy.rejectUnauthorized : true;
     }
 
     return request(requestOptions)

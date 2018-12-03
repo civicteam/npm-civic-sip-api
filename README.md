@@ -14,7 +14,7 @@ Please see [docs.civic.com](https://docs.civic.com) for a more details.
 npm install civic-sip-api --save
 ```
 
-### Usage
+### Basic Usage
 ```javascript
 const civicSip = require('civic-sip-api');
 
@@ -53,8 +53,35 @@ userData =  {
 }
 ```
 
+### Proxy Usage
+There is basic proxy support. The server address and port is set as a url.
+
+`rejectUnauthorized` Setting this to `false` is optional and can be used when testing in development and needing to use a self signed cerificate. We do *not* recommend setting this to `false` in a production environment as it will compromise security.
+
+```javascript
+const civicSip = require('civic-sip-api');
+
+const civicClient = civicSip.newClient({
+    appId: 'ABC123',
+    appSecret: APP_SECRET,
+    prvKey: PRV_KEY,
+    proxy: {
+      url: 'http://10.0.0.6:8080',
+      rejectUnauthorized: false, // Do not make false in production
+    },
+});
+
+civicClient.exchangeCode(jwtToken)
+    .then((userData) => {
+        // store user data and userId as appropriate
+        console.log('userData = ', JSON.stringify(userData, null, 4));
+    }).catch((error) => {
+        console.log(error);
+    });
+```
+
 ---
-Copyright &copy; 2017 Civic.com
+Copyright &copy; 2018 Civic.com
 
 Released under the MIT License, which can be found in the repository in `LICENSE.txt`.
 
