@@ -229,8 +229,6 @@ sipClientFactory.newClient = (configIn) => {
    * @returns {String} The ephemeral token
    */
   const getEphemeralToken = () => {
-    const tokenIssuerEndpoint = 'http://api.com/getEphemeralToken'; // FIXME
-
     const civicExtention = jwtjs.createCivicExt(config.appId, config.appSecret);
     const authToken = jwtjs.createToken(
       config.appId,
@@ -246,7 +244,7 @@ sipClientFactory.newClient = (configIn) => {
         Accept: '*/*',
         Authorization: `JWT ${authToken}`,
       },
-      url: tokenIssuerEndpoint,
+      url: `${invokeUrl}/ephemeralToken`,
       method: 'POST',
       resolveWithFullResponse: true,
     };

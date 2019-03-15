@@ -156,16 +156,16 @@ function mockAuthCodeThrowErrror(authCode, errorMessage) {
 }
 
 function mockGetEphemeralToken() {
-  nock('http://api.com')
-    .post('/getEphemeralToken')
+  nock(`${API}:443`, { encodedQueryParams: true })
+    .post(`/${STAGE}/ephemeralToken`)
     .reply(200, {
       token: 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5YzA5OWFlOS01ZDEyLTRiNDctYTBhNS0wZGQ4ZTY5ZjcxZDAiLCJpYXQiOjE1NTI2MDAzNjUuNTExLCJleHAiOjE1NTI5NjAzNjUuNTExLCJpc3MiOiJUSjI5SGxnViIsImF1ZCI6Imh0dHBzOi8vYXBpLmNpdmljLmNvbS9zaXAvIiwic3ViIjoiVEoyOUhsZ1YiLCJkYXRhIjp7ImNpdmljRXh0ZW50aW9uIjoiRDlGdTFCZWdJVzRMWkNob05RTVpVbjVnMHBRTE5XeFJ5WitJdnJaOHdvZz0ifX0.drxLNeBu_RS4hVD9DhDZcYIFh3pmaemP0Kkx4snIl7X3VrkXrsPx8Ds3uC-JypY1wGlnpmTp_ns_ZGHW4XPLow',
     });
 }
 
-function mockGetEphemeralTokenUnauthorized() {
-  nock('http://api.com')
-    .post('/getEphemeralToken')
+function mockGetEphemeralTokenFail() {
+  nock(`${API}:443`, { encodedQueryParams: true })
+    .post(`/${STAGE}/ephemeralToken`)
     .reply(401, 'Unauthorized');
 }
 
@@ -399,7 +399,7 @@ describe('Index', function indexTest() {
       const client = sipClient.newClient(clientConfig);
 
       nock.cleanAll();
-      mockGetEphemeralTokenUnauthorized();
+      mockGetEphemeralTokenFail();
 
       client.getEphemeralToken().then(() => {
         assert.isNotOk('Should not have succeeded');
