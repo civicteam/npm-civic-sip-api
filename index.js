@@ -226,10 +226,10 @@ sipClientFactory.newClient = (configIn) => {
   /**
    * Retrieve an ephemeral token for partners authentication
    *
-   * @returns {String} The ephemeral token 
+   * @returns {String} The ephemeral token
    */
   const getEphemeralToken = () => {
-    const tokenIssuerEndpoint = 'http://api.com/getEphemeralToken'; //FIXME
+    const tokenIssuerEndpoint = 'http://api.com/getEphemeralToken'; // FIXME
 
     const civicExtention = jwtjs.createCivicExt(config.appId, config.appSecret);
     const authToken = jwtjs.createToken(
@@ -237,8 +237,8 @@ sipClientFactory.newClient = (configIn) => {
       hostedServices.SIPHostedService.base_url,
       config.appId,
       JWT_EXPIRATION,
-      { civicExtention, },
-      config.prvKey,
+      { civicExtention },
+      config.prvKey
     );
 
     const requestOptions = {
@@ -260,9 +260,8 @@ sipClientFactory.newClient = (configIn) => {
         const body = JSON.parse(response.body);
         if (body.token) {
           return body.token;
-        } else {
-          throw new Error(`Error fetching ephemeral token`);
         }
+        throw new Error('Error fetching ephemeral token');
       })
       .catch((error) => {
         throw new Error(`Error fetching ephemeral token: ${error}`);
