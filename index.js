@@ -223,9 +223,57 @@ sipClientFactory.newClient = (configIn) => {
       .catch(processPayloadErrorResponse);
   };
 
+  /**
+   * Retrieve an ephemeral token for partners authentication
+   *
+   * @returns {String} The ephemeral token 
+   */
+  const getEphemeralToken = () => {
+    const tokenIssuerEndpoint = 'http://api.com/getEphemeralToken'; //FIXME
+
+    const civicExtention = jwtjs.createCivicExt(config.appId, config.appSecret);
+    const authToken = jwtjs.createToken(
+      config.appId,
+      hostedServices.SIPHostedService.base_url,
+      config.appId,
+      JWT_EXPIRATION,
+      { civicExtention, },
+      config.prvKey,
+    );
+
+    const requestOptions = {
+      headers: {
+        Accept: '*/*',
+        Authorization: `JWT ${authToken}`,
+      },
+      url: tokenIssuerEndpoint,
+      method: 'POST',
+      resolveWithFullResponse: true,
+    };
+
+    return request(requestOptions)
+      .then((response) => {
+        if (response.statusCode !== 200) {
+          throw new Error(`${response.statusCode} ${response.body}`);
+        }
+        // handle success
+        const body = JSON.parse(response.body);
+        if (body.token) {
+          return body.token;
+        } else {
+          throw new Error(`Error fetching ephemeral token`);
+        }
+      })
+      .catch((error) => {
+        throw new Error(`Error fetching ephemeral token: ${error}`);
+      });
+  };
+
+
   return {
     exchangeCode,
     processPayload,
+    getEphemeralToken,
   };
 };
 

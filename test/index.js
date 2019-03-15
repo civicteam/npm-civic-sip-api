@@ -155,6 +155,20 @@ function mockAuthCodeThrowErrror(authCode, errorMessage) {
     .replyWithError(errorMessage);
 }
 
+function mockGetEphemeralToken() {
+  nock('http://api.com')
+    .post('/getEphemeralToken')
+    .reply(200, {
+      token: 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5YzA5OWFlOS01ZDEyLTRiNDctYTBhNS0wZGQ4ZTY5ZjcxZDAiLCJpYXQiOjE1NTI2MDAzNjUuNTExLCJleHAiOjE1NTI5NjAzNjUuNTExLCJpc3MiOiJUSjI5SGxnViIsImF1ZCI6Imh0dHBzOi8vYXBpLmNpdmljLmNvbS9zaXAvIiwic3ViIjoiVEoyOUhsZ1YiLCJkYXRhIjp7ImNpdmljRXh0ZW50aW9uIjoiRDlGdTFCZWdJVzRMWkNob05RTVpVbjVnMHBRTE5XeFJ5WitJdnJaOHdvZz0ifX0.drxLNeBu_RS4hVD9DhDZcYIFh3pmaemP0Kkx4snIl7X3VrkXrsPx8Ds3uC-JypY1wGlnpmTp_ns_ZGHW4XPLow',
+    });
+}
+
+function mockGetEphemeralTokenUnauthorized() {
+  nock('http://api.com')
+    .post('/getEphemeralToken')
+    .reply(401, 'Unauthorized');
+}
+
 describe('Index', function indexTest() {
   this.timeout(10000);
   const authCode = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxNzc1ZDQwMi05ZjNjLTQ0OWUtYWZkYS04ZDk4MmM0OGIxYjIiLCJpYXQiOjE1MTk5MzE3MTcuMDM1LCJleHAiOjE1MTk5MzM1MTcuMDM1LCJpc3MiOiJjaXZpYy1zaXAtaG9zdGVkLXNlcnZpY2UiLCJhdWQiOiJodHRwczovL2FwaS5jaXZpYy5jb20vc2lwLyIsInN1YiI6Ikh5aGFXTzFTRyIsImRhdGEiOnsiY29kZVRva2VuIjoiYTRhYjE1MDEtZTg0Ni00NmUyLWEwZDktMzEyNTAwNmIxNzUzIn19.1d3Q3QeL8SE_wlyxHPi6Pn-buf8XsxRlCkfhULiI5CbDLCgEjLuVMGIFSUXg6_snXOD9p-ImVml-0yF-A2-qaw';
@@ -355,6 +369,49 @@ describe('Index', function indexTest() {
       } catch (error) {
         assert.equal(error.message, 'Error exchanging code for data: [ \'an error\' ]');
       }
+    });
+
+    it('should retrieve a valid jwt on getEphemeralToken call', (done) => {
+      const doneFn = done;
+      const client = sipClient.newClient(clientConfig);
+
+      nock.cleanAll();
+      mockGetEphemeralToken();
+
+      client.getEphemeralToken().then((token) => {
+        const decodedToken = jwtjs.decode(token);
+        assert.isDefined(decodedToken.headerObj);
+        assert.isDefined(decodedToken.payloadObj);
+        assert.isDefined(decodedToken.payloadObj.aud);
+        assert.isDefined(decodedToken.payloadObj.iss);
+        assert.isDefined(decodedToken.payloadObj.sub);
+        assert.equal(decodedToken.headerObj.typ, 'JWT');
+        doneFn();
+      })
+      .catch((error) => {
+        assert.isNotOk('Should not have thrown exception');
+        doneFn(error);
+      });
+    });
+
+    it('should throw exception if ephemeral token request fails', (done) => {
+      const doneFn = done;
+      const client = sipClient.newClient(clientConfig);
+
+      nock.cleanAll();
+      mockGetEphemeralTokenUnauthorized();
+
+      client.getEphemeralToken().then(() => {
+        assert.isNotOk('Should not have succeeded');
+        doneFn();
+      })
+      .catch((error) => {
+        assert.equal(
+          error.message,
+          'Error fetching ephemeral token: StatusCodeError: 401 - "Unauthorized"'
+        );
+        doneFn();
+      });
     });
   });
 });
