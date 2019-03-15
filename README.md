@@ -80,6 +80,29 @@ civicClient.exchangeCode(jwtToken)
     });
 ```
 
+### Ephemeral Token
+
+A short-lived token can be requested through the `getEphemeralToken` exposed method. The ephemeral token is a JWT signed by a Civic service that allows the Civic (requester) customer to secure the Partner interactions.
+
+Here is an usage example:
+
+```javascript
+const civicSip = require('civic-sip-api');
+
+const civicClient = civicSip.newClient({
+    appId: 'ABC123',
+    appSecret: APP_SECRET,
+    prvKey: PRV_KEY,
+});
+
+civicClient.getEphemeralToken()
+    .then((ephemeralToken) => {
+      // use ephemeralToken in requests from Partners
+    }).catch((error) => {
+        console.log(error);
+    });
+```
+
 ---
 Copyright &copy; 2018 Civic.com
 
