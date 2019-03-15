@@ -256,8 +256,8 @@ sipClientFactory.newClient = (configIn) => {
         }
         // handle success
         const body = JSON.parse(response.body);
-        if (body.token) {
-          return body.token;
+        if (body.ephemeralToken) {
+          return body.ephemeralToken;
         }
         throw new Error('Error fetching ephemeral token');
       })
