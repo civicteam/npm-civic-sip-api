@@ -245,7 +245,7 @@ sipClientFactory.newClient = (configIn) => {
       config.appId,
       JWT_EXPIRATION,
       { civicExtention },
-      config.prvKey,
+      config.prvKey
     );
 
     const requestOptions = {
