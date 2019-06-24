@@ -93,7 +93,7 @@ function mockProcessPayloadError() {
 
 function mockAuthCode(authCode, data, encrypted) {
   nock(`${API}:443`, { encodedQueryParams: true })
-    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, processPayload: true })
+    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, clientSupportsS3Payloads: true })
     .reply(200, {
       data, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted, alg: 'aes',
     }, ['Content-Type',
@@ -122,7 +122,7 @@ function mockAuthCode(authCode, data, encrypted) {
 
 function mockAuthCodeProcessedPayload(authCode, data) {
   nock(`${API}:443`, { encodedQueryParams: true })
-    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, processPayload: true })
+    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, clientSupportsS3Payloads: true })
     .reply(200, data, [
       'Content-Type',
       'application/json',
@@ -151,7 +151,7 @@ function mockAuthCodeProcessedPayload(authCode, data) {
 
 function mockAuthCodeThrowErrror(authCode, errorMessage) {
   nock(`${API}:443`, { encodedQueryParams: true })
-    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, processPayload: true })
+    .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, clientSupportsS3Payloads: true })
     .replyWithError(errorMessage);
 }
 
