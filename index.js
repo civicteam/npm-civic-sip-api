@@ -196,7 +196,7 @@ sipClientFactory.newClient = (configIn) => {
    *
    */
   const exchangeCode = (jwtToken) => {
-    const body = { authToken: jwtToken, allowS3UploadedPayload: true };
+    const body = { authToken: jwtToken, processPayload: true };
     const authHeader = makeAuthorizationHeader(config, 'scopeRequest/authCode', 'POST', body);
     const contentLength = Buffer.byteLength(JSON.stringify(body));
     const headers = {
