@@ -1,1 +1,4 @@
 test
+.DS_STORE
+.circleci
+.nyc_output
