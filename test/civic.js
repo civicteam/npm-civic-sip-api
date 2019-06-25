@@ -82,7 +82,7 @@ describe('Civic SIP Server', function test() {
     sinon.stub(jwtjs, 'verify').returns(true);
 
     nock(`${API}:443`, { encodedQueryParams: true })
-      .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, processPayload: true })
+      .post(`/${STAGE}/scopeRequest/authCode`, { authToken: authCode, allowS3UploadedPayload: true })
       .reply(200, {
         data: returnData, userId: '0eb98e188597a61ee90969a42555ded28dcdddccc6ffa8d8023d8833b0a10991', encrypted: true, alg: 'aes'
       }, ['Content-Type',
