@@ -6,10 +6,19 @@ const jwtjs = require('./lib/jwt');
 const sipClientFactory = {};
 const JWT_EXPIRATION = '3m';
 const hostedServices = {
-  SIPHostedService: {
-    base_url: 'https://api.civic.com/sip/',
-    hexpub: '049a45998638cfb3c4b211d72030d9ae8329a242db63bfb0076a54e7647370a8ac5708b57af6065805d5a6be72332620932dbb35e8d318fce18e7c980a0eb26aa1',
-    tokenType: 'JWT',
+  dev: {
+    SIPHostedService: {
+      base_url: 'https://api.civic.com/sip/',
+      hexpub: '049a45998638cfb3c4b211d72030d9ae8329a242db63bfb0076a54e7647370a8ac5708b57af6065805d5a6be72332620932dbb35e8d318fce18e7c980a0eb26aa1',
+      tokenType: 'JWT',
+    },
+  },
+  prod: {
+    SIPHostedService: {
+      base_url: 'https://api.civic.com/sip/',
+      hexpub: '049a45998638cfb3c4b211d72030d9ae8329a242db63bfb0076a54e7647370a8ac5708b57af6065805d5a6be72332620932dbb35e8d318fce18e7c980a0eb26aa1',
+      tokenType: 'JWT',
+    },
   },
 };
 
@@ -27,7 +36,7 @@ const hostedServices = {
  * @returns {string}
  */
 const makeAuthorizationHeader = (config, targetPath, targetMethod, requestBody) => {
-  const jwtToken = jwtjs.createToken(config.appId, hostedServices.SIPHostedService.base_url, config.appId, JWT_EXPIRATION, {
+  const jwtToken = jwtjs.createToken(config.appId, hostedServices[config.env].SIPHostedService.base_url, config.appId, JWT_EXPIRATION, {
     method: targetMethod,
     path: targetPath,
   }, config.prvKey);
@@ -44,9 +53,9 @@ const makeAuthorizationHeader = (config, targetPath, targetMethod, requestBody) 
  *
  * @param payload contains data field with JWT token signed by sip-hosted-services
  */
-const verifyAndDecrypt = (payload, secret) => {
+const verifyAndDecrypt = (payload, secret, env = 'prod') => {
   const token = payload.data;
-  const isValid = jwtjs.verify(token, hostedServices.SIPHostedService.hexpub, { gracePeriod: 60 });
+  const isValid = jwtjs.verify(token, hostedServices[env].SIPHostedService.hexpub, { gracePeriod: 60 });
 
   if (!isValid) {
     throw new Error('JWT Token containing encrypted data could not be verified');
@@ -123,10 +132,10 @@ sipClientFactory.newClient = (configIn) => {
   }
 
   if (config.api) {
-    hostedServices.SIPHostedService.base_url = config.api;
+    hostedServices[config.env].SIPHostedService.base_url = config.api;
 
     if (!config.api.endsWith('/')) {
-      hostedServices.SIPHostedService.base_url += '/';
+      hostedServices[config.env].SIPHostedService.base_url += '/';
     }
   }
 
@@ -185,7 +194,7 @@ sipClientFactory.newClient = (configIn) => {
   };
 
   // extract endpoint and path from url
-  const invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
+  const invokeUrl = hostedServices[config.env].SIPHostedService.base_url + config.env;
 
   /**
    * Exchange authorization code in the form of a JWT Token for the user data
@@ -225,9 +234,54 @@ sipClientFactory.newClient = (configIn) => {
       .catch(processPayloadErrorResponse);
   };
 
+  /**
+   * Retrieve an ephemeral token for partners authentication
+   *
+   * @returns {String} The ephemeral token
+   */
+  const getEphemeralToken = () => {
+    const civicExtention = jwtjs.createCivicExt(config.appId, config.appSecret);
+    const authToken = jwtjs.createToken(
+      config.appId,
+      hostedServices[config.env].SIPHostedService.base_url,
+      config.appId,
+      JWT_EXPIRATION,
+      { civicExtention },
+      config.prvKey
+    );
+
+    const requestOptions = {
+      headers: {
+        Accept: '*/*',
+        Authorization: `JWT ${authToken}`,
+      },
+      url: `${invokeUrl}/ephemeralToken`,
+      method: 'POST',
+      resolveWithFullResponse: true,
+    };
+
+    return request(requestOptions)
+      .then((response) => {
+        if (response.statusCode !== 200) {
+          throw new Error(`${response.statusCode} ${response.body}`);
+        }
+        // handle success
+        const body = JSON.parse(response.body);
+        if (body.ephemeralToken) {
+          return body.ephemeralToken;
+        }
+        throw new Error('Error fetching ephemeral token');
+      })
+      .catch((error) => {
+        throw new Error(`Error fetching ephemeral token: ${error}`);
+      });
+  };
+
+
   return {
     exchangeCode,
     processPayload,
+    getEphemeralToken,
   };
 };
 
