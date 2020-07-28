@@ -103,6 +103,7 @@ sipClientFactory.newClient = (configIn) => {
       env: 'prod',
       defaultContentType: 'application/json',
       defaultAcceptType: 'application/json',
+      disableStage: false,
     };
   }
 
@@ -185,7 +186,12 @@ sipClientFactory.newClient = (configIn) => {
   };
 
   // extract endpoint and path from url
-  const invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
+  let invokeUrl;
+  if (!config.disableStage) {
+    invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
+  } else {
+    invokeUrl = hostedServices.SIPHostedService.base_url;
+  }
 
   /**
    * Exchange authorization code in the form of a JWT Token for the user data
