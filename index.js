@@ -103,7 +103,7 @@ sipClientFactory.newClient = (configIn) => {
       env: 'prod',
       defaultContentType: 'application/json',
       defaultAcceptType: 'application/json',
-      disableStage: false,
+      includeStageInURL: false,
     };
   }
 
@@ -187,7 +187,7 @@ sipClientFactory.newClient = (configIn) => {
 
   // extract endpoint and path from url
   let invokeUrl;
-  if (!config.disableStage) {
+  if (!config.includeStageInURL) {
     invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
   } else {
     invokeUrl = hostedServices.SIPHostedService.base_url;
