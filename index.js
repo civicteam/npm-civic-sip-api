@@ -123,6 +123,10 @@ sipClientFactory.newClient = (configIn) => {
     config.env = 'prod';
   }
 
+  if (config.includeStageInURL === undefined) {
+    config.includeStageInURL = true;
+  }
+
   if (config.api) {
     hostedServices.SIPHostedService.base_url = config.api;
 
@@ -186,12 +190,7 @@ sipClientFactory.newClient = (configIn) => {
   };
 
   // extract endpoint and path from url
-  let invokeUrl;
-  if (!config.includeStageInURL) {
-    invokeUrl = hostedServices.SIPHostedService.base_url + config.env;
-  } else {
-    invokeUrl = hostedServices.SIPHostedService.base_url;
-  }
+  const invokeUrl = config.includeStageInURL ? hostedServices.SIPHostedService.base_url + config.env : hostedServices.SIPHostedService.base_url;
 
   /**
    * Exchange authorization code in the form of a JWT Token for the user data
